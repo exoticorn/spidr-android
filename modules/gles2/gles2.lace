@@ -1,0 +1,115 @@
+export do
+	add_path :cpp_include_dir, 'include'
+end
+
+import 'base'
+
+! sources/*.cpp
+
+case @build_tags
+when tag('linux')
+	add_global_attribute :libs, 'GL'
+when tag('android')
+else
+	raise "unsupported platform"
+end
+
+add_global_path :cpp_include_dir, @project.build_path + 'include'
+
+define_compiler(SingleFileCompiler, :input_pattern => tag('.shader'), :output_name => 'gen_sources/%_shader.cpp') do
+	TYPES = {
+		vec2: ['f', 2]
+	}
+
+	Variable = Struct.new :type, :name, :clean_name, :count
+	def compile(infile, outfile)
+		if Helpers::newer?(infile.path, outfile) || true
+			trace("Processing %s", infile.path)
+			source = File.read(infile.path)
+			shared, vertex, fragment = source.split("--\n")
+			vertex = shared + vertex
+			fragment = shared + fragment
+			
+			attributes = get_variables(vertex, 'attribute')
+			uniforms = get_variables(vertex, 'uniform') + get_variables(fragment, 'uniform')
+			
+			name = File.basename(infile.path, '.*')
+			header = gen_header(name, attributes, uniforms)
+			source = gen_source(name, vertex, fragment, attributes, uniforms)
+			
+			FileUtils.mkdir_p @project.build_path + 'include'
+			File.open(@project.build_path + 'include' + (name + '_shader.hpp'), 'w') {|f| f.puts header }
+			File.open(outfile, 'w') {|f| f.puts source }
+		end
+	end
+	
+	def get_variables(source, storage)
+		variables = source.scan(/^\s*#{storage}\s+(\w+)\s+(\w+)\s*(\[(\d+)\])?\s*;/)
+		variables.map do |var|
+			type = TYPES[var[0].intern]
+			raise "Unknown type '#{var[0]}'" unless type
+			name = var[1]
+			if name[0] == storage[0] && name[1, 1] =~ /[A-Z]/
+				name = name[1, 1].downcase + name[2..-1]
+			end
+			Variable.new(type, var[1], name, (var[3] || 1).to_i)
+		end
+	end
+	
+	def gen_header(name, attributes, uniforms)
+		lines = []
+		guard = 'EXO_' + name.upcase + '_SHADER_HPP'
+		lines << "#ifndef #{guard}"
+		lines << "#define #{guard}"
+		lines << "#include \"exo/gles2/shaderbase.hpp\""
+		lines << "namespace exo {"
+		classname = name.capitalize + 'Shader'
+		lines << "\tclass #{classname} : public ShaderBase {"
+		lines << "\tpublic:"
+		lines << "\t\t#{classname}(GLContext& context) : ShaderBase(context, s_sourceData) {};"
+		attributes.each_with_index do |attribute, i|
+			lines << "\t\tvoid set#{attribute.clean_name.capitalize}Attribute(GLenum type, GLboolean normalized, GLsizei stride, const GLvoid* pointer) {"
+			lines << "\t\t\tglVertexAttribPointer(m_attributes[#{i}], #{attribute.type[1]}, type, normalized, stride, pointer);"
+			lines << "\t\t}"
+		end
+		uniforms.each_with_index do |uniform, i|
+			t = uniform.type[0]
+			if t == 'f' || t == 'i'
+				ctype = t == 'f' ? 'GLfloat' : 'GLint'
+				dim = uniform.type[1]
+				vars = %w(x y z w)[0, dim]
+				lines << "\t\tvoid set#{uniform.clean_name.capitalize}Uniform(#{vars.map {|v| ctype + ' ' + v}.join(', ')}) {"
+				lines << "\t\t\tglUniform#{dim}#{t}(m_uniforms[#{i}], #{vars.join(', ')});"
+				lines << "\t\t}"
+			else
+				raise "unknown type for uniform #{uniform.inspect}"
+			end
+		end
+		lines << "\tprivate:"
+		lines << "\t\tstatic SourceData s_sourceData;"
+		lines << "\t};"
+		lines << "};"
+		lines << "#endif"
+		lines.join("\n")
+	end
+	
+	def gen_source(name, vertex, fragment, attributes, uniforms)
+		classname = name.capitalize + 'Shader'
+		lines = []
+		lines << "#include \"#{name}_shader.hpp\""
+		lines << "namespace exo {"
+		lines << "\tstatic const char* s_p#{classname}Attributes[] = {#{attributes.map {|a| a.name.inspect }.join(', ')}};"
+		lines << "\tstatic const char* s_p#{classname}Uniforms[] = {#{uniforms.map {|u| u.name.inspect }.join(', ')}};"
+		lines << "\tShaderBase::SourceData #{classname}::s_sourceData = {"
+		lines << "\t\t#{vertex.inspect},"
+		lines << "\t\t#{fragment.inspect},"
+		lines << "\t\t#{attributes.size},"
+		lines << "\t\ts_p#{classname}Attributes,"
+		lines << "\t\t#{uniforms.size},"
+		lines << "\t\ts_p#{classname}Uniforms"
+		lines << "\t};"
+		lines << "}"
+		lines.join("\n")
+	end
+end
+

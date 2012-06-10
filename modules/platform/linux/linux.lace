@@ -1,5 +1,5 @@
 set_global_attribute :linux_gcc_warning_level, 2
-add_global_attribute :cpp_define, 'EXO_BUILD_LINUX'
+add_global_attribute :cpp_define, 'EXO_PLATFORM_LINUX'
 
 define_compiler(SingleFileCompiler, :input_pattern => tag('.cpp') | tag('.c'), :dependency_pattern => tag('.hpp') | tag('.h'), :output_name => 'cpp_compiler/%.o') do
 

@@ -20,6 +20,7 @@ public:
 	Vector2 normalize() const { return *this * (1 / getLength()); }
 	
 	void clear() { x = y = 0; }
+	void set(float _x, float _y) { x = _x; y = _y; }
 	
 	float	x, y;
 };

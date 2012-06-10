@@ -19,6 +19,7 @@ namespace exo
 	typedef size_t MemorySize;
 
 #define nullptr 0
+#define EXO_USE_PARAMETER(x) ((void)(x))
 }
 
 #endif

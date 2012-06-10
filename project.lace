@@ -3,14 +3,15 @@
 module_search_path 'modules'
 
 import 'gameframework'
+import 'gles2'
 
 ! sources/*.cpp
+! sources/*.shader
 ! assets/level*.svg LEVEL
 ! assets/sfx.txt SFX
 ! assets/objects.svg OBJECTS
 
 add_global_path :cpp_include_dir, 'sources'
-add_global_attribute :libs, 'GL'
 
 define_compiler(MultiFileCompiler, :name => 'level converter', :input_pattern => tag('.svg') & tag('LEVEL'), :output_name => 'gen_src/levels.cpp') do
 	def compile(files)

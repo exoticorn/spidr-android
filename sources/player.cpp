@@ -3,7 +3,7 @@
 #include "level.hpp"
 #include "collision.hpp"
 #include "sfx.hpp"
-#include "GL/gl.h"
+#include "renderer.hpp"
 #include <stdio.h>
 
 void render_object(const float*);
@@ -142,31 +142,27 @@ void Player::resolvePosition(float moveFactor, int depth, float timeStep)
 	}
 }
 
-void Player::render(bool renderAiming)
+void Player::render(exo::Renderer& renderer, bool renderAiming)
 {
-	glPushMatrix();
+	renderer.push();
 	Vector2 pos = m_position;
-	glTranslatef(pos.x - 4 * playerRadius, pos.y - 4 * playerRadius, 0);
-	glScalef(playerRadius * 8, playerRadius * 8, 1);
-	render_object(obj_spidr);
-	glPopMatrix();
+	renderer.translate(pos.x - 4 * playerRadius, pos.y - 4 * playerRadius);
+	renderer.scale(playerRadius * 8, playerRadius * 8);
+	renderer.drawLines(obj_spidr + 1, (exo::uint)*obj_spidr);
+	renderer.pop();
 
 	if(renderAiming)
 	{
-		glLineStipple(4, 0x4444);
-		glEnable(GL_LINE_STIPPLE);
 		Vector2 vtx[2];
 		vtx[0] = (m_position + m_aimDir * playerRadius);
 		vtx[1] = vtx[0] + m_aimDir * (hookRange - playerRadius);
-		glVertexPointer(2, GL_FLOAT, 0, vtx);
-		glDrawArrays(GL_LINES, 0, 2);
-		glDisable(GL_LINE_STIPPLE);
+		renderer.drawLines(&vtx[0].x, 2);
 
 		if(m_hookState != Hook_Aiming)
 		{
 			vtx[0] = (m_position + (m_hookPosition - m_position).normalize() * playerRadius);
 			vtx[1] = m_hookPosition;
-			glDrawArrays(GL_LINES, 0, 2);
+			renderer.drawLines(&vtx[0].x, 2);
 		}
 	}	
 }

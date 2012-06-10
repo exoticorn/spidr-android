@@ -2,7 +2,7 @@
 #include "objects.hpp"
 #include "collision.hpp"
 #include "sfx.hpp"
-#include "GL/gl.h"
+#include "renderer.hpp"
 #include <stdio.h>
 #include <string.h>
 
@@ -61,20 +61,19 @@ void Level::collectOrb(const Vector2& position)
 	}
 }
 
-void Level::render() const
+void Level::render(exo::Renderer& renderer) const
 {
-	glVertexPointer(2, GL_FLOAT, 0, m_pLevelData->pVertices);
-	glDrawArrays(GL_LINES, 0, m_pLevelData->numGfxVertices);
+	renderer.drawLines(m_pLevelData->pVertices, m_pLevelData->numGfxVertices);
 	
 	for(int i = 0; i < m_pLevelData->numOrbs; i++)
 	{
 		if(m_pActiveOrbs[i])
 		{
 			const Vector2& pos = m_pLevelData->pOrbs[i];
-			glPushMatrix();
-			glTranslatef(pos.x - 0.5f, pos.y - 0.5f, 0);
-			render_object(obj_orb);
-			glPopMatrix();
+			renderer.push();
+			renderer.translate(pos.x - 0.5f, pos.y - 0.5f);
+			renderer.drawLines(obj_orb + 1, (exo::uint)*obj_orb);
+			renderer.pop();
 		}
 	}
 }

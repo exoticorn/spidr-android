@@ -1,5 +1,5 @@
 set_global_attribute :android_gcc_warning_level, 2
-add_global_attribute :cpp_define, 'EXO_BUILD_ANDROID'
+add_global_attribute :cpp_define, 'EXO_PLATFORM_ANDROID'
 
 @project.globals.android_sdk_version ||= 8
 @project.globals.android_ndk_version ||= 8

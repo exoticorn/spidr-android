@@ -5,6 +5,10 @@
 
 struct Line;
 struct Circle;
+namespace exo
+{
+	class Renderer;
+}
 
 struct LevelData
 {
@@ -32,7 +36,7 @@ public:
 	void collectOrb(const Vector2& position);
 	int numOrbsLeft() const { return m_numOrbsLeft; }
 	
-	void render() const;
+	void render(exo::Renderer& renderer) const;
 	
 private:
 

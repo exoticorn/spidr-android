@@ -4,6 +4,10 @@
 #include "math.hpp"
 
 class Level;
+namespace exo
+{
+	class Renderer;
+}
 
 struct Input
 {
@@ -22,7 +26,7 @@ public:
 
 	const Vector2& getPosition() const { return m_position; }
 	void update(float timeStep, const Input& input);
-	void render(bool renderAiming);
+	void render(exo::Renderer& renderer, bool renderAiming);
 
 private:
 	void resolvePosition(float moveFactor, int depth, float timeStep);

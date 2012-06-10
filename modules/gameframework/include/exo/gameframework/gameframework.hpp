@@ -1,6 +1,8 @@
 #ifndef EXO_GAMEFRAMEWORK_HPP
 #define EXO_GAMEFRAMEWORK_HPP
 
+#include "exo/gles2/glcontext.hpp"
+
 namespace exo
 {
 	class ApplicationBase;
@@ -13,6 +15,8 @@ namespace exo
 		void				createApplication();
 		void				destroyApplication();
 
+		GLContext&			getGLContext() { return m_glContext; }
+
 	protected:
 
 		void				update();
@@ -20,15 +24,18 @@ namespace exo
 
 	private:
 		ApplicationBase*	m_pApplication;
+		GLContext			m_glContext;
 	};
 
 	extern ApplicationBase* newApplication(GameFramework& gameFramework);
 }
 
-#if defined(EXO_BUILD_LINUX)
+#if defined(EXO_PLATFORM_LINUX)
 #	include "linux/gameframework_linux.hpp"
-#elif defined(EXO_BUILD_ANDROID)
+#elif defined(EXO_PLATFORM_ANDROID)
 #	include "android/gameframework_android.hpp"
+#else
+#	error "unsupported platform"
 #endif
 
 #endif

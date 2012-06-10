@@ -22,6 +22,8 @@ namespace exo
 
 	void GameFramework::update()
 	{
+		m_glContext.update();
+
 		if(m_pApplication)
 		{
 			m_pApplication->update(1.0f / 60);

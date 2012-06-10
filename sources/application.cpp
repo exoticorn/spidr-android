@@ -1,6 +1,7 @@
 #include "application.hpp"
 
-#include "GL/gl.h"
+#include "exo/gameframework/gameframework.hpp"
+
 #include <stdio.h>
 #include <stdlib.h>
 #include <stdarg.h>
@@ -10,11 +11,6 @@
 #include "sfx.hpp"
 
 int score = 0;
-void render_object(const float* pObject)
-{
-	glVertexPointer(2, GL_FLOAT, 0, pObject + 1);
-	glDrawArrays(GL_LINES, 0, (int)*pObject);
-}
 
 namespace exo
 {
@@ -57,7 +53,7 @@ namespace exo
 		{ 't', obj_t },
 	};
 
-	void print(const Vector2& position, const char* pFormat, ...)
+	void print(Renderer& renderer, const Vector2& position, const char* pFormat, ...)
 	{
 		va_list ap;
 		va_start(ap, pFormat);
@@ -65,9 +61,9 @@ namespace exo
 		vsnprintf(buffer, sizeof(buffer), pFormat, ap);
 		va_end(ap);
 
-		glPushMatrix();
-		glTranslatef(position.x, position.y, 0);
-		glScalef(20, 20, 0);
+		renderer.push();
+		renderer.translate(position.x, position.y);
+		renderer.scale(20, 20);
 		const char* pText = buffer;
 		while(*pText)
 		{
@@ -75,18 +71,19 @@ namespace exo
 			{
 				if(fontMapping[i].c == *pText)
 				{
-					render_object(fontMapping[i].pObject);
+					renderer.drawLines(fontMapping[i].pObject + 1, (uint)*fontMapping[i].pObject);
 					break;
 				}
 			}
-			glTranslatef(1, 0, 0);
+			renderer.translate(1, 0);
 			pText++;
 		}
-		glPopMatrix();
+		renderer.pop();
 	}
 
 	Application::Application(GameFramework& gameFramework)
 		: ApplicationBase(gameFramework)
+		, m_renderer(gameFramework.getGLContext())
 	{
 		m_pAudio = new Audio;
 
@@ -313,56 +310,47 @@ namespace exo
 
 	void Application::render()
 	{
+		m_renderer.beginRendering(xRes, yRes);
 		glClearColor(0, 0.1f, 0, 0);
 
 		glClear(GL_COLOR_BUFFER_BIT);
 		glDepthFunc(GL_ALWAYS);
 
-		glViewport(0, 0, xRes, yRes);
-		glMatrixMode(GL_PROJECTION);
-		glLoadIdentity();
-		glOrtho(0, xRes, yRes, 0, -1000, 1000);
-		glMatrixMode(GL_MODELVIEW);
-		glLoadIdentity();
-
 		glEnable(GL_BLEND);
 		glBlendFunc(GL_SRC_ALPHA, GL_ONE);
 
-		glColor4f(0.8, 1, 0.8, 0.3);
-
 		{
-			glPushMatrix();
-			glTranslatef(m_mousePosition.x, m_mousePosition.y, 0);
-			glVertexPointer(2, GL_FLOAT, 0, mouseCursor);
-			glDrawArrays(GL_LINES, 0, sizeof(mouseCursor) / (sizeof(float) * 2));
-			glPopMatrix();
+			m_renderer.push();
+			m_renderer.translate(m_mousePosition.x, m_mousePosition.y);
+			m_renderer.drawLines(mouseCursor, sizeof(mouseCursor) / (sizeof(float) * 2));
+			m_renderer.pop();
 		}
 
-		print(Vector2(10, 10), "hi %d", m_hiScore);
-		print(Vector2(xRes - 20 * 11 - 10, 10), "score %d", m_score);
+		print(m_renderer, Vector2(10, 10), "hi %d", m_hiScore);
+		print(m_renderer, Vector2(xRes - 20 * 11 - 10, 10), "score %d", m_score);
 		if(m_gameState != State_Title && m_nextState != State_Title && m_nextState != State_StartGame)
 		{
-			print(Vector2(10, yRes - 32), "$%d", m_level.numOrbsLeft());
+			print(m_renderer, Vector2(10, yRes - 32), "$%d", m_level.numOrbsLeft());
 			int intTimeLeft = ceil(m_timeLeft);
-			print(Vector2(xRes / 2 - 40, yRes - 32), "%d:%02d", intTimeLeft / 60, intTimeLeft % 60);
+			print(m_renderer, Vector2(xRes / 2 - 40, yRes - 32), "%d:%02d", intTimeLeft / 60, intTimeLeft % 60);
 		}
 
 		if(m_gameState == State_Title && fmodf(m_stateTime, 1) < 0.5f)
 		{
-			print(Vector2(xRes/2 - 110, yRes/2 + 50), "press start");
+			print(m_renderer, Vector2(xRes/2 - 110, yRes/2 + 50), "press start");
 		}
 		else if(m_gameState == State_GameOver && fmodf(m_stateTime, 1) < 0.5f)
 		{
-			print(Vector2(xRes/2 - 90, yRes/2 + 50), "game over");
+			print(m_renderer, Vector2(xRes/2 - 90, yRes/2 + 50), "game over");
 		}
 
-		glScalef(m_scale, m_scale, 1);
-		glTranslatef(xRes/2/m_scale - m_player.getPosition().x * 100, yRes/2/m_scale - m_player.getPosition().y * 100, 0);
-		glScalef(100, 100, 1);
+		m_renderer.scale(m_scale, m_scale);
+		m_renderer.translate(xRes/2/m_scale - m_player.getPosition().x * 100, yRes/2/m_scale - m_player.getPosition().y * 100);
+		m_renderer.scale(100, 100);
 
-		m_level.render();
+		m_level.render(m_renderer);
 
-		m_player.render(m_gameState == State_Level);
+		m_player.render(m_renderer, m_gameState == State_Level);
 	}
 
 	ApplicationBase* newApplication(GameFramework& gameFramework)

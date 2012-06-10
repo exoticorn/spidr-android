@@ -5,6 +5,7 @@
 #include "level.hpp"
 #include "player.hpp"
 #include "math.hpp"
+#include "renderer.hpp"
 
 class Audio;
 
@@ -40,6 +41,8 @@ namespace exo
 
 		GameState		m_gameState;
 		GameState		m_nextState;
+
+		Renderer		m_renderer;
 	};
 
 	ApplicationBase* newApplication(GameFramework& gameFramework);

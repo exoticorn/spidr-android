@@ -11,4 +11,14 @@ else
 	raise 'unsupported platform'
 end
 
+if @build_tags.include? 'debug'
+	add_global_attribute :cpp_defines, 'BUILD_DEBUG'
+end
+
+if @build_tags.include? 'test'
+	import 'unittest'
+	! sources/test/*.cpp TEST
+end
+
+! sources/*.cpp
 ! base.lace

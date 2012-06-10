@@ -1,0 +1,31 @@
+if @build_tags.include?('test')
+	add_global_path :cpp_include_dir, 'include'
+	add_global_attribute :cpp_define, 'EXO_BUILD_UNITTEST'
+
+	! src/*.cpp
+
+	define_compiler(MultiFileCompiler, :input_pattern => tag('.cpp') & tag('TEST'), :output_name => 'unittest/execute_tests.cpp') do
+		def compile(files)
+			trace "Scanning TEST sources:"
+			functions = []
+			files.each do |file|
+				trace "... %s", file
+				functions.concat(File.read(file.path.to_s).scan(/^\s*UNIT_TEST\((\w+)\)/).flatten)
+			end
+			trace "Generating %s with %d functions", output_name, functions.size
+			File.open(output_name.to_s, 'w') do |file|
+				file.puts '#include "exo/unittest.hpp"'
+				functions.each {|f| file.printf "void test_%s();\n", f }
+				file.puts "void ut_execute_tests() {"
+				functions.each {|f| file.printf "\tUnitTest::execute_test(test_%s, \"%s\");\n", f, f }
+				file.puts "}"
+			end
+		end
+	
+		def output_files(files)
+			out = files.map {|f| InputFile.new(f.path, @output_tags, f.context) }
+			out << InputFile.new(output_name, @output_tags, @project.global_context)
+			return out
+		end
+	end
+end
