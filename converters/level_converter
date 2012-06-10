@@ -1,0 +1,81 @@
+#!/usr/bin/env ruby
+
+$hatching = 0.08
+
+$: << File.dirname(__FILE__)
+
+require 'svg_converter_base'
+
+def convert_level(file, filename, index)
+	outline = []
+	hatching = []
+	start = Vector2.new(0, 0)
+	orbs = []
+	read_svg(filename) do |obj|
+		if obj.is_a? Gfx
+			outline.concat(obj.outline)
+			hatching.concat(obj.hatching)
+		elsif obj.is_a? Helper
+			pos = obj.position
+			if obj.name == '100' || obj.name == 'start'
+				start = pos
+			elsif obj.name == '001'
+				orbs << pos
+			end
+		end
+	end
+	
+	printf "%s: %d lines\n", filename, outline.size + hatching.size
+	
+	file.printf "const float level%d_gfxlines[] = {\n", index
+	values = (outline + hatching).flatten.map {|v| [v.x, v.y]}.flatten
+	(0...values.size).step(4) do |i|
+		file.printf "\t%s,\n", values[i, 4].join(', ')
+	end
+	file.printf "};\n"
+	
+	file.printf "const float level%d_collision[] = {\n", index
+	outline.each do |s, e|
+		file.printf "\t%f, %f, %f, %f,\n", s.x, s.y, e.x, e.y
+	end
+	file.printf "};\n"
+	
+	file.printf "const float level%d_orbs[] = {\n", index
+	orbs.each do |pos|
+		file.printf "\t%f, %f,\n", pos.x, pos.y
+	end
+	file.printf "};\n"
+	
+	file.printf "const LevelData level%d = {\n", index
+	file.printf "Vector2(%f, %f),\n", start.x, start.y
+	file.printf "%d, level%d_gfxlines,\n", (outline.size + hatching.size) * 2, index
+	file.printf "%d, (const Line*)level%d_collision,\n", outline.size, index
+	file.printf "%d, (const Vector2*)level%d_orbs,\n", orbs.size, index
+	file.printf "};\n"
+end
+
+outname = ARGV.shift
+innames = ARGV
+
+File.open(outname, 'w') do |file|
+	file.puts '#include "level.hpp"'
+	file.puts '#include "collision.hpp"'
+	levels = []
+	innames.each do |filename|
+		unless filename =~ /^assets\/level(\d+)\.svg$/
+			printf "bad level filename: %s\n", filename
+			exit 1
+		end
+		index = $1.to_i
+		convert_level(file, filename, index)
+		levels << index unless index >= 90
+	end
+	levels.sort!
+	file.printf "const int numLevels = %d;\n", levels.size
+	file.printf "const LevelData* pLevels[] = {\n"
+	levels.each do |i|
+		file.printf "\t&level%d,\n", i
+	end
+	file.puts "};\n"
+end
+

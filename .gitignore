@@ -1,0 +1,6 @@
+*~
+build/
+.externalToolBuilders/
+.project
+.cproject
+.classpath

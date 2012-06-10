@@ -1,0 +1,44 @@
+#!/usr/bin/env ruby
+
+$hatching = 0.06
+
+$: << File.dirname(__FILE__)
+
+require 'svg_converter_base'
+
+infile = ARGV.shift
+outfile = ARGV.shift
+
+objects = {}
+read_svg(infile) do |obj|
+	next unless obj.is_a? GfxObject
+	lines = obj.outline + obj.hatching
+	
+	all_points = lines.flatten
+	center = all_points.inject{|a, b| a + b} * (1.0 / all_points.size)
+	tile = Vector2.new(center.x.to_i, center.y.to_i)
+	lines.map! {|p1, p2| [p1 - tile, p2 - tile]}
+
+	objects[obj.name] = lines	
+end
+
+File.open(outfile + '.cpp', 'w') do |file|
+	file.puts "#include \"#{File.basename(outfile)}.hpp\""
+	objects.each do |name, lines|
+		file.printf "const float obj_%s[] = {\n", name
+		file.printf "%d,\n", lines.size * 2
+		lines.each do |line|
+			file.puts line.map {|v| [v.x, v.y]}.flatten.join(', ') + ','
+		end
+		file.puts '};'
+	end
+end
+
+File.open(outfile + '.hpp', 'w') do |file|
+	file.puts '#ifndef __OBJECTS_HPP'
+	file.puts '#define __OBJECTS_HPP'
+	objects.each do |name, lines|
+		file.printf "extern const float obj_%s[];\n", name
+	end
+	file.puts '#endif'
+end

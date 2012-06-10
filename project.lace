@@ -1,0 +1,43 @@
+@project.name = 'spidr'
+
+module_search_path 'modules'
+
+import 'gameframework'
+
+! sources/*.cpp
+! assets/level*.svg LEVEL
+! assets/sfx.txt SFX
+! assets/objects.svg OBJECTS
+
+add_global_path :cpp_include_dir, 'sources'
+add_global_attribute :libs, 'GL'
+
+define_compiler(MultiFileCompiler, :name => 'level converter', :input_pattern => tag('.svg') & tag('LEVEL'), :output_name => 'gen_src/levels.cpp') do
+	def compile(files)
+		if Helpers::newer?(files.map {|f| f.path}, output_name)
+			sh Helpers::ruby_exe, @path + 'converters/level_converter', output_name, files.map {|f| f.path }
+		end
+	end
+end
+
+define_compiler(SingleFileCompiler, :name => 'sfx_converter', :input_pattern => tag('.txt') & tag('SFX'), :output_name => 'gen_src/%.cpp') do
+	def compile(infile, outfile)
+		if Helpers::newer?(infile.path, outfile)
+			sh Helpers::ruby_exe, @path + 'converters/sfx_converter', infile.path, outfile.to_s.sub(/\.cpp$/, '')
+		end
+		@project.global_context.add_attribute(:cpp_include_dir, @output_path)
+	end
+end
+
+define_compiler(SingleFileCompiler, :name => 'gfx_converter', :input_pattern => tag('.svg') & tag('OBJECTS'), :output_name => 'gen_src/%.cpp') do
+	def compile(infile, outfile)
+		if Helpers::newer?(infile.path, outfile)
+			sh Helpers::ruby_exe, @path + 'converters/gfx_converter', infile.path, outfile.to_s.sub(/\.cpp$/, '')
+		end
+		@project.global_context.add_attribute(:cpp_include_dir, @output_path)
+	end
+end
+
+! project.lace
+
+

@@ -1,0 +1,82 @@
+#!/usr/bin/env ruby
+
+SfxFrame = Struct.new :osci_type, :osci_note, :osci_duty, :osci_volume, :noise_volume, :filter_freq
+
+sfxs = {}
+current_sfx = nil
+last_frame = nil
+
+def lerp(a, b, f)
+	a + (b - a) * f
+end
+
+infile = ARGV.shift
+outfile = ARGV.shift
+
+File.readlines(infile).each_with_index do |line, line_index|
+	line = line.strip
+	next if line.empty?
+	
+	if line =~ /^(\w+):$/
+		sfxs[$1] = current_sfx = []
+		last_frame = SfxFrame.new :wave, 0, 0.5, 0, 0, 1
+	else
+		frame = last_frame.dup
+		in_frames = 1
+		remains = line.sub(/(\d+) ->/) do
+			in_frames = $1.to_i; ''
+		end.sub(/(wave|rect)/) do
+			frame.osci_type = $1.intern; ''
+		end.sub(/d(0\.\d+)/) do
+			frame.osci_duty = $1.to_f; ''
+		end.sub(/v(\d(\.\d+)?)/) do
+			frame.osci_volume = $1.to_f; ''
+		end.sub(/n(\d(\.\d+)?)/) do
+			frame.noise_volume = $1.to_f; ''
+		end.sub(/f(\d(\.\d+)?)/) do
+			frame.filter_freq = $1.to_f; ''
+		end.sub(/(\+|\-)\d+/) do |match|
+			frame.osci_note = match.to_f; ''
+		end
+		unless remains.strip.empty? || remains == '.'
+			printf "parse error in line %d (remains: '%s')\n", line_index + 1, remains.strip
+			exit 1
+		end
+		
+		in_frames.times do |i|
+			f = (i + 1) / in_frames.to_f
+			iframe = SfxFrame.new
+			iframe.osci_type = frame.osci_type
+			iframe.osci_note = lerp(last_frame.osci_note, frame.osci_note, f)
+			iframe.osci_duty = lerp(last_frame.osci_duty, frame.osci_duty, f)
+			iframe.osci_volume = lerp(last_frame.osci_volume, frame.osci_volume, f)
+			iframe.noise_volume = lerp(last_frame.noise_volume, frame.noise_volume, f)
+			iframe.filter_freq = lerp(last_frame.filter_freq, frame.filter_freq, f)
+			current_sfx << iframe
+		end
+		
+		last_frame = frame
+	end
+end
+
+File.open(outfile + '.hpp', 'w') do |file|
+	file.printf "#ifndef _SFX_HPP\n#define _SFX_HPP\n#include \"fxsynth.hpp\"\n"
+	sfxs.each_key do |name|
+		file.printf "extern FxSynth::SynthCode sfx_%s[];\n", name
+	end
+	file.printf "#endif\n"
+end
+
+File.open(outfile + '.cpp', 'w') do |file|
+	file.printf "#include \"sfx.hpp\"\n"
+	sfxs.each do |name, frames|
+		file.printf "FxSynth::SynthCode sfx_%s[] = {\n", name
+		frames.each do |frame|
+			file.printf "{ FxSynth::Osci_%s, ", frame.osci_type == :wave ? 'Wave' : 'Rect'
+			file.printf "%f, ", 440 * 2 ** (frame.osci_note / 12.0) / 44100
+			file.printf "%f, %f, %f, %f },\n", frame.osci_volume, frame.osci_duty, frame.noise_volume, frame.filter_freq
+		end
+		file.printf "{ FxSynth::EndOfCode, 0, 0, 0, 0, 0 }\n};\n"
+	end
+end
+

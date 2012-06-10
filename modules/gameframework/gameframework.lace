@@ -1,0 +1,18 @@
+export do
+	import 'base'
+	add_path :cpp_include_dir, 'include'
+end
+
+! sources/*.cpp
+
+case @build_tags
+when tag('linux')
+	add_global_attribute :libs, 'SDL'
+	! sources/linux/*.cpp
+when tag('android')
+else
+	raise 'unsupported platform'
+end
+
+! gameframework.lace
+

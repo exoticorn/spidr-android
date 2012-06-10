@@ -1,0 +1,14 @@
+export do
+	add_path :cpp_include_dir, 'include'
+end
+
+case @build_tags
+when tag('linux')
+	import 'platform/linux'
+when tag('android')
+	import 'platform/android'
+else
+	raise 'unsupported platform'
+end
+
+! base.lace

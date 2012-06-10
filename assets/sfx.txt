@@ -1,0 +1,40 @@
+collide:
+	wave -22 v1 n0.7 f0.4
+	5 -> -46 v0.25 n0.05 f0.05
+
+shoot:
+	wave -12 d0.1 v0.1 n0.4 f0.01
+	7 -> -4 n0.6 f0.1
+	5 -> +0 v0 n0 f0.01
+
+hit:
+	rect n1 f0.4
+	f0.1
+	5 -> f0
+
+collect:
+	wave d0.0 v0.2 f0.4
+	10 -> d0.5 +48 f1
+	-12
+	5 -> +12
+	-48
+	2 -> +0
+
+start_pressed:
+	wave -0 d0.0 f0.4 v0.4
+	.
+	.
+	.
+	+12
+	20 -> f0 v0
+	
+level_fade_in:
+	wave -48 v0.1 n0.3 f0.05
+	40 -> n0.15 f0.4
+	80 -> -64 v0 f0
+
+gameover:
+	rect +8 d0.5 v0.4 f0.2
+	100 -> d0.1 -36 f0.1
+	40 -> -40 f0 v0
+

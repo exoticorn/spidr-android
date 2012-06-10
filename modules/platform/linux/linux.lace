@@ -1,0 +1,94 @@
+set_global_attribute :linux_gcc_warning_level, 2
+add_global_attribute :cpp_define, 'EXO_BUILD_LINUX'
+
+define_compiler(SingleFileCompiler, :input_pattern => tag('.cpp') | tag('.c'), :dependency_pattern => tag('.hpp') | tag('.h'), :output_name => 'cpp_compiler/%.o') do
+
+	def compile( infile, outfile ) 
+		dfilename = outfile.to_s.sub(/\.o/, '.d')
+		check_optimized_dependencies(infile.path, dfilename) do
+			include_dirs = infile.context.get_attribute_set(:cpp_include_dir).map {|d| ['-I', d] }
+			defines = infile.context.get_attribute_set(:cpp_define).map {|d| ['-D', d] }
+			warnings = []
+			case infile.context.get_attribute_value(:linux_gcc_warning_level)
+			when 2
+				warnings << '-Wall' << '-Wextra' << '-Werror'
+			when 1
+				warnings << '-Wall' << '-Werror'
+			when 0
+				warnings << '-Werror'
+			end
+			warnings << infile.context.get_attribute_set(:linux_gcc_warnings).map {|w| ['-W' + w]}
+
+			optimization = infile.context.get_attribute_value(:cpp_optimization)
+			optimization_options = case optimization
+			when :none, nil
+				['-O0']
+			when :full
+				['-O2']
+			else
+				optimization.split()
+			end
+
+			if /.*\.c$/.match(infile.path.to_s)
+				trace "Compiling (C) %s", infile.path
+				defaults = [
+					'-fdiagnostics-show-location=once',
+					'-fno-builtin',
+					'-ffast-math',
+					'-Wno-sign-compare'
+				]
+			else
+				trace "Compiling (C++) %s", infile.path
+				defaults = [
+					'-fdiagnostics-show-location=once',				
+					'-ffast-math',
+				]
+			end
+			
+			sh 'gcc',
+				'-MD', '-g',
+				defaults,
+				infile.context.get_attribute_set(:linux_gcc_options),
+				warnings,
+				optimization_options,
+				defines,
+				include_dirs,
+				'-c', infile.path, '-o', make_relative(outfile)
+
+			dependencies = Dependencies.load_make_dependencies(dfilename)
+			dependencies.write_lace_dependencies(dfilename)
+		end
+	end
+end
+
+define_compiler(MultiFileCompiler, :input_pattern => tag('.o'), :output_tag => 'elf') do
+	def output_name
+		@output_path + @project.name
+	end
+
+	def compile(infiles)
+		trace 'Linking...'
+
+		lib_dirs = @project.global_context.get_attribute_set(:lib_dir)
+
+		libs = @project.global_context.get_attribute_list(:libs)
+
+		lib_parameters = libs.map do |lib|
+			if lib =~ /^lib(.+)\.a$/
+				['-l', $1]
+			elsif lib =~ /^lib(.+)\.so$/
+				['-l', $1]
+			else
+				['-l', lib]
+			end
+		end
+		
+		response_sh 'g++',
+			lib_dirs,
+			'-g',
+			infiles.map { |f| f.path },
+			lib_parameters,
+			'-o', output_name
+	end
+end
+

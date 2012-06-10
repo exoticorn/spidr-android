@@ -1,0 +1,230 @@
+set_global_attribute :android_gcc_warning_level, 2
+add_global_attribute :cpp_define, 'EXO_BUILD_ANDROID'
+
+@project.globals.android_sdk_version ||= 8
+@project.globals.android_ndk_version ||= 8
+@project.globals.android_sdk_path = to_path(ENV['ANDROID_SDK'] || (ENV['HOME'] + '/projects/android/android-sdk-linux'))
+@project.globals.android_ndk_path = to_path(ENV['ANDROID_NDK'] || (ENV['HOME'] + '/projects/android/android-ndk-r8'))
+@project.globals.android_sdk_platform_path = @project.globals.android_sdk_path + "platforms/android-#{@project.globals.android_sdk_version}"
+add_global_path :java_lib_path, @project.globals.android_sdk_platform_path + 'android.jar'
+add_global_path :java_lib_path, @project.globals.android_sdk_path + 'tools/support/annotations.jar'
+
+add_global_attribute :eclipse_external_tool, {
+	name: 'install and launch -D ' + @project.build_tags.join('_'),
+	exe: to_path('scripts/install_and_launch.sh'),
+	arguments: ['-D'],
+	env: {
+		BUILD_DIR: @project.build_path,
+		PROJECT_NAME: @project.name,
+		PROJECT_PACKAGE: @project.globals.android_project_package,
+		PROJECT_ACTIVITY: @project.globals.android_project_activity
+	}
+}
+
+@project.globals.android_system_path = @project.globals.android_ndk_path + "platforms/android-#{@project.globals.android_ndk_version}/arch-arm"
+@project.globals.android_compiler_path = @project.globals.android_ndk_path + 'toolchains/arm-linux-androideabi-4.4.3/prebuilt/linux-x86/bin'
+@project.globals.android_compiler_module_path = to_path('.')
+add_global_attribute :cpp_ide_include_dir, @project.globals.android_system_path + 'usr/include'
+
+define_compiler(SingleFileCompiler, :input_pattern => tag('.cpp') | tag('.c'), :dependency_pattern => tag('.hpp') | tag('.h'), :output_name => 'cpp_compiler/%.o') do
+
+	def compile( infile, outfile ) 
+		dfilename = outfile.to_s.sub(/\.o/, '.d')
+		check_optimized_dependencies(infile.path, dfilename) do
+			include_dirs = infile.context.get_attribute_set(:cpp_include_dir).map {|d| ['-I', d] }
+			defines = infile.context.get_attribute_set(:cpp_define).map {|d| ['-D', d] }
+			warnings = []
+			case infile.context.get_attribute_value(:android_gcc_warning_level)
+			when 2
+				warnings << '-Wall' << '-Wextra' << '-Werror'
+			when 1
+				warnings << '-Wall' << '-Werror'
+			when 0
+				warnings << '-Werror'
+			end
+			warnings << infile.context.get_attribute_set(:android_gcc_warnings).map {|w| ['-W' + w]}
+
+			optimization = infile.context.get_attribute_value(:cpp_optimization)
+			optimization_options = case optimization
+			when :none, nil
+				['-O0']
+			when :full
+				['-O2']
+			else
+				optimization.split()
+			end
+
+			if /.*\.c$/.match(infile.path.to_s)
+				trace "Compiling (C) %s", infile.path
+				defaults = [
+					'-fdiagnostics-show-location=once',
+					'-fno-builtin',
+					'-ffast-math',
+					'-Wno-sign-compare'
+				]
+			else
+				trace "Compiling (C++) %s", infile.path
+				defaults = [
+					'-fdiagnostics-show-location=once',				
+					'-ffast-math',
+					'-fno-rtti',
+					'-fno-exceptions'
+				]
+			end
+			
+			sh @project.globals.android_compiler_path + 'arm-linux-androideabi-gcc',
+				'--sysroot=' + @project.globals.android_system_path.to_s,
+				'-MD', '-g',
+				'-march=armv7', '-mfloat-abi=softfp', '-mfpu=vfp',
+				defaults,
+				infile.context.get_attribute_set(:android_gcc_options),
+				warnings,
+				'-Wno-psabi',
+				optimization_options,
+				defines,
+				include_dirs, system_include_dirs,
+				'-c', infile.path, '-o', make_relative(outfile)
+
+			dependencies = Dependencies.load_make_dependencies(dfilename)
+			dependencies.write_lace_dependencies(dfilename)
+		end
+	end
+end
+
+
+define_compiler(MultiFileCompiler, :input_pattern => tag('.o'), :output_tag => '.so') do
+	def output_name
+		@output_path + ('libkeengame.so')
+	end
+
+	def compile(infiles)
+		trace 'Linking...'
+
+		lib_dirs = @project.global_context.get_attribute_set(:lib_dir)
+
+		libs = @project.global_context.get_attribute_list(:libs)
+
+		lib_parameters = libs.map do |lib|
+			if lib =~ /^lib(.+)\.a$/
+				['-l', $1]
+			elsif lib =~ /^lib(.+)\.so$/
+				['-l', $1]
+			else
+				['-l', lib]
+			end
+		end
+		
+		response_sh @project.globals.android_compiler_path + 'arm-linux-androideabi-g++',
+			'--sysroot=' + @project.globals.android_system_path.to_s,
+			'-Wl,-soname,' + output_name.basename.to_s, '-shared',
+			lib_dirs,
+			'-g',
+			infiles.map { |f| f.path },
+			lib_parameters,
+			'-o', output_name
+		
+		FileUtils.mkdir_p @output_path + 'apk/lib/armeabi'
+		sh @project.globals.android_compiler_path + 'arm-linux-androideabi-strip',
+			'-o', @output_path + 'apk/lib/armeabi' + 'libkeengame.so',
+			output_name
+	end
+end
+
+define_compiler(CompilerBase, :input_pattern => tag('.java'), :output_tag => 'java-classes') do
+	def output_dir
+		@output_path + 'java'
+	end
+
+	def output_files(files)
+		[InputFile.new(output_dir, @output_tags, @project.global_context)]
+	end
+	
+	def process_files(files, num_jobs)
+		FileUtils.mkdir_p output_dir
+		output_files = Dir[output_dir + '**/*.class'].map {|f| to_path(f) }
+		if output_files.empty? || Helpers.newer?(files, output_file)
+			trace "Compiling %d java file(s)", files.size
+			classpath = [
+				output_dir,
+				@project.globals.android_sdk_path + 'tools/support/annotations.jar'
+			]
+			response_sh 'javac',
+				'-d', @output_path + 'java',
+				'-classpath', classpath.map {|f| f.to_s}.join(':'),
+				'-target', '1.5',
+				'-bootclasspath', @project.globals.android_sdk_platform_path + 'android.jar',
+				'-encoding', 'UTF-8',
+				'-g',
+				'-source', '1.5',
+				files.map {|f| f.path}
+		end
+	end
+end
+
+define_compiler(CompilerBase, :input_pattern => tag('java-classes'), :output_tag => '.dex') do
+	def output_files(files)
+		[InputFile.new(@output_path + 'classes.dex', @output_tags, @project.global_context)]
+	end
+	
+	def process_files(files, num_jobs)
+		input_files = Dir[@output_path + 'java/**/*.class']
+		if Helper::newer?(input_files, output_files)
+			trace "Dexing class files"
+			FileUtils.mkdir_p @output_path + 'apk'
+			sh @project.globals.android_sdk_path + 'platform-tools/dx',
+				'--dex',
+				'--output', @output_path + 'apk/classes.dex',
+				@output_path + 'java',
+				@project.globals.android_sdk_path + 'tools/support/annotations.jar'
+		end
+	end
+end
+
+define_compiler(CompilerBase, :input_pattern => tag('ANDROID_MANIFEST') | tag('.dex') | tag('.so'), :output_tag => 'apk') do
+	def output_name
+		@output_path + (@project.name + '.apk')
+	end
+
+	def output_files(files)
+		[InputFile.new(output_name, @output_tags, @project.global_context)]
+	end
+	
+	def process_files(files, num_jobs)
+		manifest = files.find {|f| f.tags.include? 'ANDROID_MANIFEST' }
+		unless manifest
+			trace "Failed to find AndroidManifest.xml"
+			exit 1
+		end
+		trace "Creating apk with manifest %s", manifest.path
+		sh @project.globals.android_sdk_path + 'platform-tools/aapt',
+			'package',
+			'--no-crunch',
+			'-f',
+			'--debug-mode',
+			'-M', manifest.path,
+			'-F', (output_name.to_s + '.res'),
+			'-I', @project.globals.android_sdk_path + 'platforms/android-8/android.jar'
+		sh 'unzip', '-q', '-o', (output_name.to_s + '.res'), '-d', @output_path + 'apk'
+		FileUtils.cp(@project.globals.android_compiler_path.parent.parent + 'gdbserver', @output_path + 'apk/lib/armeabi/gdbserver')
+		current_dir = Dir.getwd
+		Dir.chdir(@output_path + 'apk')
+		sh 'zip', '-r', '-q', '-FS', output_name, 'lib', 'classes.dex', 'AndroidManifest.xml', 'gamebuild'
+		Dir.chdir(current_dir)
+		trace 'Signing apk'
+		sh 'jarsigner',
+			'-sigalg', 'MD5withRSA', '-digestalg', 'SHA1',
+			'-keystore', @project.globals.android_compiler_module_path + 'debug.keystore',
+			'-storepass', 'android',
+			output_name,
+			'androiddebugkey'
+		
+		if @project.build_tags.include?('split')
+			trace 'Zipping gamebuild'
+			Dir.chdir(@output_path)
+			sh 'zip', '-r', '-q', '-FS', 'gamebuild.zip', 'gamebuild'
+			Dir.chdir(current_dir)
+		end
+	end
+end
+
+
