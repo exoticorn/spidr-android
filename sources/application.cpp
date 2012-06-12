@@ -89,12 +89,6 @@ namespace exo
 
 		m_currentLevel = 0;
 
-		glEnable(GL_LINE_SMOOTH);
-		glLineWidth(2);
-
-		glEnableClientState(GL_VERTEX_ARRAY);
-
-		glClearColor(0, 1, 0, 0);
 		m_quitGame = false;
 
 		m_scale = 1.0f;
@@ -311,13 +305,6 @@ namespace exo
 	void Application::render()
 	{
 		m_renderer.beginRendering(xRes, yRes);
-		glClearColor(0, 0.1f, 0, 0);
-
-		glClear(GL_COLOR_BUFFER_BIT);
-		glDepthFunc(GL_ALWAYS);
-
-		glEnable(GL_BLEND);
-		glBlendFunc(GL_SRC_ALPHA, GL_ONE);
 
 		{
 			m_renderer.push();
@@ -351,6 +338,12 @@ namespace exo
 		m_level.render(m_renderer);
 
 		m_player.render(m_renderer, m_gameState == State_Level);
+	}
+
+	void Application::setScreenSize(uint width, uint height)
+	{
+		xRes = (int)width;
+		yRes = (int)height;
 	}
 
 	ApplicationBase* newApplication(GameFramework& gameFramework)

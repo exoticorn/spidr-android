@@ -11,6 +11,9 @@ when tag('linux')
 	add_global_attribute :libs, 'SDL'
 	! sources/linux/*.cpp
 when tag('android')
+	! sources/android/*.cpp
+	! sources/android/**/*.java
+	add_global_path :java_source_dirs, 'sources/android'
 else
 	raise 'unsupported platform'
 end

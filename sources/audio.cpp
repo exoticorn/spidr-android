@@ -1,10 +1,10 @@
 #include "audio.hpp"
-#include "SDL/SDL.h"
 #include <stdlib.h>
 #include <stdio.h>
 
 Audio::Audio()
 {
+	/*
 	SDL_AudioSpec spec;
 	spec.freq = 44100;
 	spec.format = AUDIO_S16SYS;
@@ -20,11 +20,14 @@ Audio::Audio()
 	}
 	
 	SDL_PauseAudio(0);
+	*/
 }
 
 Audio::~Audio()
 {
+	/*
 	SDL_PauseAudio(1);
+	*/
 }
 
 static float audioBuffer[256];

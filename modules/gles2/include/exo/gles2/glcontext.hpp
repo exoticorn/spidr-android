@@ -14,6 +14,7 @@ namespace exo
 		void				unregisterResource(GLResource* pResource);
 
 		void				update();
+		void				invalidateAll();
 
 	private:
 		List<GLResource*>	m_newResources;

@@ -36,4 +36,13 @@ namespace exo
 			it = m_newResources.erase(it);
 		}
 	}
+
+	void GLContext::invalidateAll()
+	{
+		for(List<GLResource*>::Iterator it = m_existingResources.getIterator(); !it.isAtEnd();)
+		{
+			m_newResources.pushBack(*it);
+			it = m_existingResources.erase(it);
+		}
+	}
 }

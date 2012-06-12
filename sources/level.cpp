@@ -6,7 +6,6 @@
 #include <stdio.h>
 #include <string.h>
 
-void render_object(const float*);
 extern int score;
 
 Level::Level()

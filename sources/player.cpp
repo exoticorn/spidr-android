@@ -6,8 +6,6 @@
 #include "renderer.hpp"
 #include <stdio.h>
 
-void render_object(const float*);
-
 const float playerRadius = 0.125f;
 const float hookRange = 2.2f;
 const float normalHookDistance = 0.5f;

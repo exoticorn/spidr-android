@@ -11,6 +11,14 @@ import 'gles2'
 ! assets/sfx.txt SFX
 ! assets/objects.svg OBJECTS
 
+if @build_tags.include? 'android'
+	! sources/android/AndroidManifest.xml ANDROID_MANIFEST
+	! sources/android/**/*.java
+	add_global_path :java_source_dirs, 'sources/android'
+	@project.globals.android_project_package = 'de.exoticorn.spidr'
+	@project.globals.android_project_activity = 'SpidrActivity'
+end
+
 add_global_path :cpp_include_dir, 'sources'
 
 define_compiler(MultiFileCompiler, :name => 'level converter', :input_pattern => tag('.svg') & tag('LEVEL'), :output_name => 'gen_src/levels.cpp') do

@@ -18,6 +18,14 @@ namespace exo
 		m_stack[0].scale.set(2.0f / screenWidth, -2.0f / screenHeight);
 		m_stack[0].translate.set(-1, 1);
 		m_isTransformDirty = true;
+
+		glClearColor(0, 0.1f, 0, 0);
+
+		glClear(GL_COLOR_BUFFER_BIT);
+		glDepthFunc(GL_ALWAYS);
+
+		glEnable(GL_BLEND);
+		glBlendFunc(GL_SRC_ALPHA, GL_ONE);
 	}
 
 	void Renderer::scale(float x, float y)

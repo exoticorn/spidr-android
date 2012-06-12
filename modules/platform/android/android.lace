@@ -75,14 +75,14 @@ define_compiler(SingleFileCompiler, :input_pattern => tag('.cpp') | tag('.c'), :
 			sh @project.globals.android_compiler_path + 'arm-linux-androideabi-gcc',
 				'--sysroot=' + @project.globals.android_system_path.to_s,
 				'-MD', '-g',
-				'-march=armv7', '-mfloat-abi=softfp', '-mfpu=vfp',
+				'-march=armv7-a', '-mfloat-abi=softfp', '-mfpu=vfp',
 				defaults,
 				infile.context.get_attribute_set(:android_gcc_options),
 				warnings,
 				'-Wno-psabi',
 				optimization_options,
 				defines,
-				include_dirs, system_include_dirs,
+				include_dirs,
 				'-c', infile.path, '-o', make_relative(outfile)
 
 			dependencies = Dependencies.load_make_dependencies(dfilename)
@@ -94,7 +94,7 @@ end
 
 define_compiler(MultiFileCompiler, :input_pattern => tag('.o'), :output_tag => '.so') do
 	def output_name
-		@output_path + ('libkeengame.so')
+		@output_path + ('libexogame.so')
 	end
 
 	def compile(infiles)
@@ -125,7 +125,7 @@ define_compiler(MultiFileCompiler, :input_pattern => tag('.o'), :output_tag => '
 		
 		FileUtils.mkdir_p @output_path + 'apk/lib/armeabi'
 		sh @project.globals.android_compiler_path + 'arm-linux-androideabi-strip',
-			'-o', @output_path + 'apk/lib/armeabi' + 'libkeengame.so',
+			'-o', @output_path + 'apk/lib/armeabi' + 'libexogame.so',
 			output_name
 	end
 end
@@ -141,8 +141,8 @@ define_compiler(CompilerBase, :input_pattern => tag('.java'), :output_tag => 'ja
 	
 	def process_files(files, num_jobs)
 		FileUtils.mkdir_p output_dir
-		output_files = Dir[output_dir + '**/*.class'].map {|f| to_path(f) }
-		if output_files.empty? || Helpers.newer?(files, output_file)
+		output_files = Dir[output_dir + '**/*.class'].map {|f| Pathname.new(f) }
+		if output_files.empty? || Helpers.newer?(files, output_files)
 			trace "Compiling %d java file(s)", files.size
 			classpath = [
 				output_dir,
@@ -168,7 +168,7 @@ define_compiler(CompilerBase, :input_pattern => tag('java-classes'), :output_tag
 	
 	def process_files(files, num_jobs)
 		input_files = Dir[@output_path + 'java/**/*.class']
-		if Helper::newer?(input_files, output_files)
+		if Helpers::newer?(input_files, output_files(files))
 			trace "Dexing class files"
 			FileUtils.mkdir_p @output_path + 'apk'
 			sh @project.globals.android_sdk_path + 'platform-tools/dx',

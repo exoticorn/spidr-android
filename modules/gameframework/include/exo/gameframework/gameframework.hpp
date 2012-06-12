@@ -16,6 +16,7 @@ namespace exo
 		void				destroyApplication();
 
 		GLContext&			getGLContext() { return m_glContext; }
+		ApplicationBase*	getApplication() { return m_pApplication; }
 
 	protected:
 

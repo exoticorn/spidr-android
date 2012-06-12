@@ -18,7 +18,6 @@ if [ $? != 0 ] ; then
 	echo "Failed to start dbgserver."
 	exit 1
 fi
-echo "Hello?"
 
 adb forward tcp:1234 localfilesystem:/data/data/$PROJECT_PACKAGE/debug-socket
 if [ $? != 0 ] ; then
@@ -40,7 +39,7 @@ if [ $? != 0 ] ; then
 	exit 1
 fi
 
-cp $BUILD_DIR/libkeengame.so /tmp/androiddebug/
+cp $BUILD_DIR/libexogame.so /tmp/androiddebug/
 
 echo "done. You can now attach gdb."
 

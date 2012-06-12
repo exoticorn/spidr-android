@@ -1,6 +1,8 @@
 #ifndef EXO_APPLICATIONBASE_HPP
 #define EXO_APPLICATIONBASE_HPP
 
+#include "exo/base/types.hpp"
+
 namespace exo
 {
 	class GameFramework;
@@ -12,6 +14,7 @@ namespace exo
 
 		virtual void	update(float timeStep) = 0;
 		virtual void	render() = 0;
+		virtual void	setScreenSize(uint width, uint height) = 0;
 
 		GameFramework&	m_gameFramework;
 	};

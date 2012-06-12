@@ -1,9 +1,8 @@
 #include "fxsynth.hpp"
-#include "SDL/SDL.h"
 #include <math.h>
 
 const FxSynth::SynthCode fxStopCode = { FxSynth::EndOfCode, 0, 0, 0, 0, 0 };
-FxSynth* FxSynth::m_pInstance = NULL;
+FxSynth* FxSynth::m_pInstance = 0;
 
 FxSynth::FxSynth()
 {
@@ -17,14 +16,14 @@ FxSynth::FxSynth()
 
 void FxSynth::playSfx(SynthCode* pCode, float volume, bool dontAbort)
 {
-	SDL_LockAudio();
+//	SDL_LockAudio();
 	if(!m_pInstance->m_dontAbort)
 	{
 		m_pInstance->m_pCurrentCode = pCode;
 		m_pInstance->m_volume = volume;
 		m_pInstance->m_dontAbort = dontAbort;
 	}
-	SDL_UnlockAudio();
+//	SDL_UnlockAudio();
 }
 
 void FxSynth::render(float* pBuffer, int numSamples)

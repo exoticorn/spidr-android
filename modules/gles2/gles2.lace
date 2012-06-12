@@ -10,6 +10,7 @@ case @build_tags
 when tag('linux')
 	add_global_attribute :libs, 'GL'
 when tag('android')
+	add_global_attribute :libs, 'GLESv2'
 else
 	raise "unsupported platform"
 end

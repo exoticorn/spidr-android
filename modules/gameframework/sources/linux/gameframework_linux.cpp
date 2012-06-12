@@ -1,4 +1,5 @@
 #include "exo/gameframework/gameframework.hpp"
+#include "exo/gameframework/applicationbase.hpp"
 #include <SDL/SDL.h>
 
 namespace exo
@@ -8,6 +9,7 @@ namespace exo
 		SDL_Init(SDL_INIT_VIDEO);
 		m_pScreen = SDL_SetVideoMode(1024, 768, 32, SDL_OPENGL);
 		createApplication();
+		getApplication()->setScreenSize(1024, 768);
 	}
 
 	GameFrameworkLinux::~GameFrameworkLinux()
