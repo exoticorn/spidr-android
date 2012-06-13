@@ -108,79 +108,21 @@ namespace exo
 
 	void Application::update(float timeStep)
 	{
-		m_mousePosition = Vector2(xRes / 2, yRes / 2);
-
 		m_input.buttonTriggered = false;
 		m_input.playDead = false;
 
-		/*
-		SDL_Event event;
-
-		while(SDL_PollEvent(&event))
+		if(m_gameFramework.getNumTouches() > 0)
 		{
-			switch(event.type)
-			{
-			case SDL_KEYDOWN:
-				switch(event.key.keysym.sym)
-				{
-				case SDLK_ESCAPE:
-					if(gameState == State_LevelFadeIn || gameState == State_Level || gameState == State_LevelFadeOut)
-					{
-						quitGame = true;
-					}
-					else
-					{
-						quit = true;
-					}
-					break;
-				case SDLK_LSHIFT:
-				case SDLK_SPACE:
-					input.button = input.buttonTriggered = true;
-					break;
-				case SDLK_p:
-					if(gameState == State_Level)
-					{
-						pause = !pause;
-					}
-					break;
-				default:
-					break;
-				}
-				break;
-			case SDL_KEYUP:
-				input.button = false;
-				break;
-			case SDL_JOYBUTTONDOWN:
-				input.button = input.buttonTriggered = true;
-				break;
-			case SDL_JOYBUTTONUP:
-				input.button = false;
-				break;
-			case SDL_MOUSEMOTION:
-				mousePosition.x = event.motion.x;
-				mousePosition.y = event.motion.y;
-				break;
-			case SDL_MOUSEBUTTONDOWN:
-				input.button = input.buttonTriggered = true;
-				break;
-			case SDL_MOUSEBUTTONUP:
-				input.button = false;
-				break;
-			case SDL_QUIT:
-				quit = true;
-				break;
-			}
-		}
-
-		if(pPad)
-		{
-			input.stick = Vector2(SDL_JoystickGetAxis(pPad, 0) / 32768.0, SDL_JoystickGetAxis(pPad, 1) / 32768.0);
+			m_input.buttonTriggered = !m_input.button;
+			m_input.button = true;
+			const GameFramework::Touch& touch = m_gameFramework.getTouch(0);
+			m_input.stick = (Vector2(touch.x, touch.y) - Vector2(xRes / 2, yRes / 2)) * (2.0f / yRes);
 		}
 		else
 		{
-			input.stick = (mousePosition - Vector2(xRes/2, yRes/2)) * (2.0 / yRes);
+			m_input.buttonTriggered = false;
+			m_input.button = false;
 		}
-		*/
 
 		switch(m_gameState)
 		{
@@ -203,7 +145,7 @@ namespace exo
 			}
 			if(m_level.numOrbsLeft() == 0)
 			{
-				m_score += (int)m_timeLeft * 10;
+				score += (int)m_timeLeft * 10;
 				m_gameState = State_LevelFadeOut;
 				m_nextState = State_LevelFadeIn;
 				m_stateTime = 0;
@@ -270,7 +212,7 @@ namespace exo
 			m_level.initialize(pLevels[m_currentLevel]);
 			m_player.initialize(&m_level);
 			m_stateTime = 0;
-			m_score = 0;
+			score = 0;
 			m_quitGame = false;
 			break;
 		case State_GameOver:
@@ -293,28 +235,20 @@ namespace exo
 			break;
 		}
 
-		if(m_score > m_hiScore)
+		if(score > m_hiScore)
 		{
-			m_hiScore = m_score;
+			m_hiScore = score;
 		}
 
 		m_stateTime += timeStep;
-		score = m_score;
 	}
 
 	void Application::render()
 	{
 		m_renderer.beginRendering(xRes, yRes);
 
-		{
-			m_renderer.push();
-			m_renderer.translate(m_mousePosition.x, m_mousePosition.y);
-			m_renderer.drawLines(mouseCursor, sizeof(mouseCursor) / (sizeof(float) * 2));
-			m_renderer.pop();
-		}
-
 		print(m_renderer, Vector2(10, 10), "hi %d", m_hiScore);
-		print(m_renderer, Vector2(xRes - 20 * 11 - 10, 10), "score %d", m_score);
+		print(m_renderer, Vector2(xRes - 20 * 11 - 10, 10), "score %d", score);
 		if(m_gameState != State_Title && m_nextState != State_Title && m_nextState != State_StartGame)
 		{
 			print(m_renderer, Vector2(10, yRes - 32), "$%d", m_level.numOrbsLeft());

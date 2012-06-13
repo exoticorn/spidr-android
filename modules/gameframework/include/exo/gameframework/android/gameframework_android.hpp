@@ -9,9 +9,15 @@ namespace exo
 		GameFrameworkAndroid();
 		~GameFrameworkAndroid();
 
+		virtual uint		getNumTouches() const;
+		virtual const Touch&	getTouch(uint index) const;
+
 		void				surfaceCreated();
 		void				update();
 		void				setScreenSize(uint width, uint height);
+
+	private:
+		Touch				m_touch;
 	};
 }
 

@@ -28,7 +28,6 @@ namespace exo
 		Level			m_level;
 		Player			m_player;
 		Input			m_input;
-		Vector2			m_mousePosition;
 
 		int				m_currentLevel;
 		bool			m_quitGame;
@@ -37,7 +36,6 @@ namespace exo
 		float			m_timeLeft;
 		float			m_timeIncrement;
 		bool			m_pause;
-		int				m_score;
 		int				m_hiScore;
 
 		GameState		m_gameState;

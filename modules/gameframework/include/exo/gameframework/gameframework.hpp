@@ -10,13 +10,24 @@ namespace exo
 	class GameFramework
 	{
 	public:
+		struct Touch
+		{
+			int			x;
+			int			y;
+			MemorySize	id;
+		};
+
 		GameFramework();
+		virtual ~GameFramework() {}
 
 		void				createApplication();
 		void				destroyApplication();
 
 		GLContext&			getGLContext() { return m_glContext; }
 		ApplicationBase*	getApplication() { return m_pApplication; }
+
+		virtual uint		getNumTouches() const = 0;
+		virtual const Touch&	getTouch(uint index) const = 0;
 
 	protected:
 

@@ -151,13 +151,9 @@ void Player::render(exo::Renderer& renderer, bool renderAiming)
 
 	if(renderAiming)
 	{
-		Vector2 vtx[2];
-		vtx[0] = (m_position + m_aimDir * playerRadius);
-		vtx[1] = vtx[0] + m_aimDir * (hookRange - playerRadius);
-		renderer.drawLines(&vtx[0].x, 2);
-
 		if(m_hookState != Hook_Aiming)
 		{
+			Vector2 vtx[2];
 			vtx[0] = (m_position + (m_hookPosition - m_position).normalize() * playerRadius);
 			vtx[1] = m_hookPosition;
 			renderer.drawLines(&vtx[0].x, 2);

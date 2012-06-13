@@ -12,9 +12,14 @@ namespace exo
 		~GameFrameworkLinux();
 
 		void				run();
+		virtual uint		getNumTouches() const { return m_isMouseDown ? 1u : 0u; }
+		virtual const Touch&	getTouch(uint) const { return m_touch; }
 
 	private:
 		SDL_Surface*		m_pScreen;
+
+		bool				m_isMouseDown;
+		Touch				m_touch;
 	};
 }
 
