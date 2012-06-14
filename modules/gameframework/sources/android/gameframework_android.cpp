@@ -8,6 +8,7 @@ namespace exo
 	{
 		createApplication();
 		m_touch.id = 0;
+		m_hasTouch = false;
 	}
 
 	GameFrameworkAndroid::~GameFrameworkAndroid()
@@ -17,7 +18,7 @@ namespace exo
 
 	uint GameFrameworkAndroid::getNumTouches() const
 	{
-		return 0;
+		return m_hasTouch ? 1u : 0u;
 	}
 
 	const GameFramework::Touch& GameFrameworkAndroid::getTouch(uint index) const
@@ -40,5 +41,13 @@ namespace exo
 	void GameFrameworkAndroid::setScreenSize(uint width, uint height)
 	{
 		getApplication()->setScreenSize(width, height);
+	}
+
+	void GameFrameworkAndroid::handleTouchInput(int id, bool down, float x, float y)
+	{
+		EXO_USE_PARAMETER(id);
+		m_hasTouch = down;
+		m_touch.x = x;
+		m_touch.y = y;
 	}
 }

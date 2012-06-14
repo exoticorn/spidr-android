@@ -12,8 +12,8 @@ namespace exo
 	public:
 		struct Touch
 		{
-			int			x;
-			int			y;
+			float		x;
+			float		y;
 			MemorySize	id;
 		};
 

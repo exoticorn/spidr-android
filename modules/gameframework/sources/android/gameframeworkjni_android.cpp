@@ -30,4 +30,11 @@ namespace exo
 		EXO_USE_PARAMETER(self);
 		reinterpret_cast<GameFrameworkAndroid*>(gameFramework)->setScreenSize((uint)width, (uint)height);
 	}
+
+	void Java_de_exoticorn_gameframework_Native_handleTouchEvent(JNIEnv* pEnv, jobject self, jlong gameFramework, jint id, jboolean down, jfloat x, jfloat y)
+	{
+		EXO_USE_PARAMETER(pEnv);
+		EXO_USE_PARAMETER(self);
+		reinterpret_cast<GameFrameworkAndroid*>(gameFramework)->handleTouchInput(id, down, x, y);
+	}
 }

@@ -15,9 +15,11 @@ namespace exo
 		void				surfaceCreated();
 		void				update();
 		void				setScreenSize(uint width, uint height);
+		void				handleTouchInput(int id, bool down, float x, float y);
 
 	private:
 		Touch				m_touch;
+		bool				m_hasTouch;
 	};
 }
 
