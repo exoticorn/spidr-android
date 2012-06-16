@@ -9,6 +9,7 @@
 #include "objects.hpp"
 #include "math.hpp"
 #include "sfx.hpp"
+#include "exo/base/functions.hpp"
 
 int score = 0;
 
@@ -265,8 +266,10 @@ namespace exo
 			print(m_renderer, Vector2(xRes/2 - 90, yRes/2 + 50), "game over");
 		}
 
-		m_renderer.scale(m_scale, m_scale);
-		m_renderer.translate(xRes/2/m_scale - m_player.getPosition().x * 100, yRes/2/m_scale - m_player.getPosition().y * 100);
+		m_renderer.translate(xRes / 2, yRes / 2);
+		float screenScale = min(xRes / 640.0f, yRes / 480.0f);
+		m_renderer.scale(m_scale * screenScale, m_scale * screenScale);
+		m_renderer.translate(-m_player.getPosition().x * 100, -m_player.getPosition().y * 100);
 		m_renderer.scale(100, 100);
 
 		m_level.render(m_renderer);

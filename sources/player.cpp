@@ -54,7 +54,6 @@ void Player::update(float timeStep, const Input& input)
 		
 		case Hook_Throwing:
 			{
-				Vector2 oldHookPosition = m_hookPosition;
 				m_hookPosition += m_throwDir * (hookSpeed * timeStep);
 				bool rangeReached = false;
 				if((m_hookPosition - m_position).getLength() > finalHookRange)
@@ -63,7 +62,7 @@ void Player::update(float timeStep, const Input& input)
 					m_hookPosition = m_position + (m_hookPosition - m_position).normalize() * finalHookRange;
 				}
 			
-				if(m_pLevel->testLineCollision(Line(oldHookPosition, m_hookPosition), &m_hookPosition))
+				if(m_pLevel->testLineCollision(Line(m_position, m_hookPosition), &m_hookPosition))
 				{
 					m_hookState = Hook_Attached;
 					FxSynth::playSfx(sfx_hit);
