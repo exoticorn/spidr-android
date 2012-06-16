@@ -19,7 +19,9 @@ add_global_path :cpp_include_dir, @project.build_path + 'include'
 
 define_compiler(SingleFileCompiler, :input_pattern => tag('.shader'), :output_name => 'gen_sources/%_shader.cpp') do
 	TYPES = {
-		vec2: ['f', 2]
+		vec2: ['f', 2],
+		vec3: ['f', 3],
+		vec4: ['f', 4]
 	}
 
 	Variable = Struct.new :type, :name, :clean_name, :count
@@ -27,6 +29,11 @@ define_compiler(SingleFileCompiler, :input_pattern => tag('.shader'), :output_na
 		if Helpers::newer?(infile.path, outfile) || true
 			trace("Processing %s", infile.path)
 			source = File.read(infile.path)
+			
+			if @project.build_tags.include?('linux')
+				source.gsub!(/\b(lowp|mediump|highp)\b/, '')
+			end
+			
 			shared, vertex, fragment = source.split("--\n")
 			vertex = shared + vertex
 			fragment = shared + fragment
@@ -64,12 +71,12 @@ define_compiler(SingleFileCompiler, :input_pattern => tag('.shader'), :output_na
 		lines << "#define #{guard}"
 		lines << "#include \"exo/gles2/shaderbase.hpp\""
 		lines << "namespace exo {"
-		classname = name.capitalize + 'Shader'
+		classname = capitalize(name) + 'Shader'
 		lines << "\tclass #{classname} : public ShaderBase {"
 		lines << "\tpublic:"
 		lines << "\t\t#{classname}(GLContext& context) : ShaderBase(context, s_sourceData) {};"
 		attributes.each_with_index do |attribute, i|
-			lines << "\t\tvoid set#{attribute.clean_name.capitalize}Attribute(GLenum type, GLboolean normalized, GLsizei stride, const GLvoid* pointer) {"
+			lines << "\t\tvoid set#{capitalize(attribute.clean_name)}Attribute(GLenum type, GLboolean normalized, GLsizei stride, const GLvoid* pointer) {"
 			lines << "\t\t\tglVertexAttribPointer(m_attributes[#{i}], #{attribute.type[1]}, type, normalized, stride, pointer);"
 			lines << "\t\t}"
 		end
@@ -79,7 +86,7 @@ define_compiler(SingleFileCompiler, :input_pattern => tag('.shader'), :output_na
 				ctype = t == 'f' ? 'GLfloat' : 'GLint'
 				dim = uniform.type[1]
 				vars = %w(x y z w)[0, dim]
-				lines << "\t\tvoid set#{uniform.clean_name.capitalize}Uniform(#{vars.map {|v| ctype + ' ' + v}.join(', ')}) {"
+				lines << "\t\tvoid set#{capitalize(uniform.clean_name)}Uniform(#{vars.map {|v| ctype + ' ' + v}.join(', ')}) {"
 				lines << "\t\t\tglUniform#{dim}#{t}(m_uniforms[#{i}], #{vars.join(', ')});"
 				lines << "\t\t}"
 			else
@@ -95,7 +102,7 @@ define_compiler(SingleFileCompiler, :input_pattern => tag('.shader'), :output_na
 	end
 	
 	def gen_source(name, vertex, fragment, attributes, uniforms)
-		classname = name.capitalize + 'Shader'
+		classname = capitalize(name) + 'Shader'
 		lines = []
 		lines << "#include \"#{name}_shader.hpp\""
 		lines << "namespace exo {"
@@ -111,6 +118,10 @@ define_compiler(SingleFileCompiler, :input_pattern => tag('.shader'), :output_na
 		lines << "\t};"
 		lines << "}"
 		lines.join("\n")
+	end
+	
+	def capitalize(str)
+		str[0, 1].upcase + str[1..-1]
 	end
 end
 
