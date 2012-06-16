@@ -12,8 +12,8 @@ when tag('linux')
 	! sources/linux/*.cpp
 when tag('android')
 	! sources/android/*.cpp
-	! sources/android/**/*.java
-	add_global_path :java_source_dirs, 'sources/android'
+	! sources/android/java/**/*.java
+	add_global_path :java_source_dirs, 'sources/android/java'
 else
 	raise 'unsupported platform'
 end

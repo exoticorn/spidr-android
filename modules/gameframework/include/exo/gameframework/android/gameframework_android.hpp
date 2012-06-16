@@ -1,6 +1,8 @@
 #ifndef EXO_GAMEFRAMEWORK_ANDROID_HPP
 #define EXO_GAMEFRAMEWORK_ANDROID_HPP
 
+#include "exo/gameframework/gameframework.hpp"
+
 namespace exo
 {
 	class GameFrameworkAndroid : public GameFramework

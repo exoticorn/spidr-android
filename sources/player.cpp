@@ -4,16 +4,19 @@
 #include "collision.hpp"
 #include "sfx.hpp"
 #include "renderer.hpp"
+#include "exo/base/functions.hpp"
 #include <stdio.h>
 
 const float playerRadius = 0.125f;
 const float hookRange = 2.2f;
+const float finalHookRange = 5;
 const float normalHookDistance = 0.5f;
 const float hookSpeed = 8;
 const float gravitation = 1.5f;
 const float stopFactor = 20;
 const float stopConstant = 4.0f;
 const float accelFactor = 3;
+const float outOfRangeAccel = 0.3f;
 
 void Player::initialize(Level* pLevel)
 {
@@ -54,10 +57,10 @@ void Player::update(float timeStep, const Input& input)
 				Vector2 oldHookPosition = m_hookPosition;
 				m_hookPosition += m_throwDir * (hookSpeed * timeStep);
 				bool rangeReached = false;
-				if((m_hookPosition - m_position).getLength() > hookRange)
+				if((m_hookPosition - m_position).getLength() > finalHookRange)
 				{
 					rangeReached = true;
-					m_hookPosition = m_position + (m_hookPosition - m_position).normalize() * hookRange;
+					m_hookPosition = m_position + (m_hookPosition - m_position).normalize() * finalHookRange;
 				}
 			
 				if(m_pLevel->testLineCollision(Line(oldHookPosition, m_hookPosition), &m_hookPosition))
@@ -93,7 +96,11 @@ void Player::update(float timeStep, const Input& input)
 			{
 				force = movementAway * stopFactor + stopConstant;
 			}
-			if(distance > normalHookDistance)
+			if(distance > hookRange)
+			{
+				force += exo::max(0.0f, -toHook.y) * gravitation + outOfRangeAccel;
+			}
+			else if(distance > normalHookDistance)
 			{
 				force += (distance - normalHookDistance) * accelFactor;
 			}
@@ -110,6 +117,8 @@ void Player::update(float timeStep, const Input& input)
 	{
 		m_pLevel->collectOrb(m_position);
 	}
+
+	m_rangeAngle = fmodf(m_rangeAngle + timeStep, 3.141f);;
 }
 
 void Player::resolvePosition(float moveFactor, int depth, float timeStep)
@@ -151,12 +160,27 @@ void Player::render(exo::Renderer& renderer, bool renderAiming)
 
 	if(renderAiming)
 	{
+		Vector2 vtx[32];
+
 		if(m_hookState != Hook_Aiming)
 		{
-			Vector2 vtx[2];
 			vtx[0] = (m_position + (m_hookPosition - m_position).normalize() * playerRadius);
 			vtx[1] = m_hookPosition;
 			renderer.drawLines(&vtx[0].x, 2);
 		}
+
+		float angleWidth = 0.03f;
+		for(int i = 0; i < 16; ++i)
+		{
+			float a1 = i * 3.141f / 8 + m_rangeAngle - angleWidth * 0.5f;
+			float a2 = a1 + angleWidth;
+
+			float angles[2] = { a1, a2 };
+			for(int j = 0; j < 2; ++j)
+			{
+				vtx[i * 2 + j] = m_position + Vector2(sinf(angles[j]) * hookRange, cosf(angles[j]) * hookRange);
+			}
+		}
+		renderer.drawLines(&vtx[0].x, 32);
 	}	
 }

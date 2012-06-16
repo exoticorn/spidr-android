@@ -13,8 +13,8 @@ import 'gles2'
 
 if @build_tags.include? 'android'
 	! sources/android/AndroidManifest.xml ANDROID_MANIFEST
-	! sources/android/**/*.java
-	add_global_path :java_source_dirs, 'sources/android'
+	! sources/android/java/**/*.java
+	add_global_path :java_source_dirs, 'sources/android/java'
 	@project.globals.android_project_package = 'de.exoticorn.spidr'
 	@project.globals.android_project_activity = 'SpidrActivity'
 end

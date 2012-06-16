@@ -1,4 +1,4 @@
-#include "exo/gameframework/gameframework.hpp"
+#include "exo/gameframework/android/gameframework_android.hpp"
 #include "exo/gles2/glcontext.hpp"
 #include "exo/gameframework/applicationbase.hpp"
 
