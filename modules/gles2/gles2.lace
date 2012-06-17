@@ -26,7 +26,7 @@ define_compiler(SingleFileCompiler, :input_pattern => tag('.shader'), :output_na
 
 	Variable = Struct.new :type, :name, :clean_name, :count
 	def compile(infile, outfile)
-		if Helpers::newer?(infile.path, outfile) || true
+		if Helpers::newer?(infile.path, outfile)
 			trace("Processing %s", infile.path)
 			source = File.read(infile.path)
 			
