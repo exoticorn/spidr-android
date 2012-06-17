@@ -1,6 +1,11 @@
 set_global_attribute :android_gcc_warning_level, 2
 add_global_attribute :cpp_define, 'EXO_PLATFORM_ANDROID'
 
+case @build_tags
+when tag('release') | tag('master')
+	set_global_attribute :cpp_optimization, :full
+end
+
 @project.globals.android_sdk_version ||= 8
 @project.globals.android_ndk_version ||= 8
 @project.globals.android_sdk_path = to_path(ENV['ANDROID_SDK'] || (ENV['HOME'] + '/projects/android/android-sdk-linux'))
@@ -206,25 +211,23 @@ define_compiler(CompilerBase, :input_pattern => tag('ANDROID_MANIFEST') | tag('.
 			'-F', (output_name.to_s + '.res'),
 			'-I', @project.globals.android_sdk_path + 'platforms/android-8/android.jar'
 		sh 'unzip', '-q', '-o', (output_name.to_s + '.res'), '-d', @output_path + 'apk'
-		FileUtils.cp(@project.globals.android_compiler_path.parent.parent + 'gdbserver', @output_path + 'apk/lib/armeabi/gdbserver')
+		unless @project.build_tags.include?('master')
+			FileUtils.cp(@project.globals.android_compiler_path.parent.parent + 'gdbserver', @output_path + 'apk/lib/armeabi/gdbserver')
+		end
 		current_dir = Dir.getwd
 		Dir.chdir(@output_path + 'apk')
-		sh 'zip', '-r', '-q', '-FS', output_name, 'lib', 'classes.dex', 'AndroidManifest.xml', 'gamebuild'
+		unaligned_apk = @output_path + 'unaligned.apk'
+		sh 'zip', '-9', '-r', '-q', '-FS', unaligned_apk, 'lib', 'classes.dex', 'AndroidManifest.xml', 'gamebuild'
 		Dir.chdir(current_dir)
 		trace 'Signing apk'
 		sh 'jarsigner',
 			'-sigalg', 'MD5withRSA', '-digestalg', 'SHA1',
 			'-keystore', @project.globals.android_compiler_module_path + 'debug.keystore',
 			'-storepass', 'android',
-			output_name,
+			unaligned_apk,
 			'androiddebugkey'
 		
-		if @project.build_tags.include?('split')
-			trace 'Zipping gamebuild'
-			Dir.chdir(@output_path)
-			sh 'zip', '-r', '-q', '-FS', 'gamebuild.zip', 'gamebuild'
-			Dir.chdir(current_dir)
-		end
+		sh @project.globals.android_sdk_path + 'tools/zipalign', '-f', '4', unaligned_apk, output_name
 	end
 end
 
