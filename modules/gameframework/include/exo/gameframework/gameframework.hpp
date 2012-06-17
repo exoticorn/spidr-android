@@ -2,6 +2,7 @@
 #define EXO_GAMEFRAMEWORK_HPP
 
 #include "exo/gles2/glcontext.hpp"
+#include "exo/base/timer.hpp"
 
 namespace exo
 {
@@ -37,6 +38,7 @@ namespace exo
 	private:
 		ApplicationBase*	m_pApplication;
 		GLContext			m_glContext;
+		Timer				m_timer;
 	};
 
 	extern ApplicationBase* newApplication(GameFramework& gameFramework);

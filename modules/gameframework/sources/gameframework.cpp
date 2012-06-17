@@ -1,6 +1,7 @@
 #include "exo/gameframework/gameframework.hpp"
 #include "exo/gameframework/applicationbase.hpp"
 #include "exo/base/types.hpp"
+#include "exo/base/functions.hpp"
 
 namespace exo
 {
@@ -26,7 +27,9 @@ namespace exo
 
 		if(m_pApplication)
 		{
-			m_pApplication->update(1.0f / 60);
+			float timeStep = min(0.1f, m_timer.getElapsedTime());
+			m_timer.reset();
+			m_pApplication->update(timeStep);
 		}
 	}
 
