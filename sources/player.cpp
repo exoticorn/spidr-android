@@ -95,13 +95,14 @@ void Player::update(float timeStep, const Input& input)
 			{
 				force = movementAway * stopFactor + stopConstant;
 			}
+			float fromHookRange = exo::abs(hookRange - distance);
+			if(fromHookRange < hookRange - normalHookDistance)
+			{
+				force += (hookRange - normalHookDistance - fromHookRange) * accelFactor;
+			}
 			if(distance > hookRange)
 			{
-				force += exo::max(0.0f, -toHook.y) * gravitation + outOfRangeAccel;
-			}
-			else if(distance > normalHookDistance)
-			{
-				force += (distance - normalHookDistance) * accelFactor;
+				force = exo::max(force, exo::max(0.0f, -toHook.y) * gravitation + outOfRangeAccel);
 			}
 		
 			m_movement += toHook * (force * timeStep);		
@@ -116,8 +117,6 @@ void Player::update(float timeStep, const Input& input)
 	{
 		m_pLevel->collectOrb(m_position);
 	}
-
-	m_rangeAngle = fmodf(m_rangeAngle + timeStep, 3.141f);;
 }
 
 void Player::resolvePosition(float moveFactor, int depth, float timeStep)
@@ -167,19 +166,5 @@ void Player::render(exo::Renderer& renderer, bool renderAiming)
 			vtx[1] = m_hookPosition;
 			renderer.drawLines(&vtx[0].x, 2);
 		}
-
-		float angleWidth = 0.03f;
-		for(int i = 0; i < 16; ++i)
-		{
-			float a1 = i * 3.141f / 8 + m_rangeAngle - angleWidth * 0.5f;
-			float a2 = a1 + angleWidth;
-
-			float angles[2] = { a1, a2 };
-			for(int j = 0; j < 2; ++j)
-			{
-				vtx[i * 2 + j] = m_position + Vector2(sinf(angles[j]) * hookRange, cosf(angles[j]) * hookRange);
-			}
-		}
-		renderer.drawLines(&vtx[0].x, 32);
 	}	
 }

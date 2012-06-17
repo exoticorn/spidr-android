@@ -40,8 +40,6 @@ private:
 	
 	Level* m_pLevel;
 	
-	float m_rangeAngle;
-
 	enum HookState { Hook_Aiming, Hook_Throwing, Hook_Attached };
 	
 	HookState m_hookState;
