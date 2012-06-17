@@ -15,9 +15,6 @@ int score = 0;
 
 namespace exo
 {
-	int xRes = 1024;
-	int yRes = 768;
-
 	const float mouseCursor[] = {
 		-6, -6,		-2, -2,
 		6, -6,		2, -2,
@@ -117,7 +114,7 @@ namespace exo
 			m_input.buttonTriggered = !m_input.button;
 			m_input.button = true;
 			const GameFramework::Touch& touch = m_gameFramework.getTouch(0);
-			m_input.stick = (Vector2(touch.x, touch.y) - Vector2(xRes / 2, yRes / 2)) * (2.0f / yRes);
+			m_input.stick = Vector2(touch.x, touch.y) - m_screenSize * 0.5f;
 		}
 		else
 		{
@@ -246,8 +243,13 @@ namespace exo
 
 	void Application::render()
 	{
-		m_renderer.beginRendering(xRes, yRes);
+		m_renderer.beginRendering(m_screenSize.x, m_screenSize.y);
 
+		m_renderer.push();
+		float uiScale = minf(1.0f, max(m_screenSize.x / 640.0f, m_screenSize.y / 480.0f));
+		m_renderer.scale(uiScale, uiScale);
+		float xRes = m_screenSize.x / uiScale;
+		float yRes = m_screenSize.y / uiScale;
 		print(m_renderer, Vector2(10, 10), "hi %d", m_hiScore);
 		print(m_renderer, Vector2(xRes - 20 * 11 - 10, 10), "score %d", score);
 		if(m_gameState != State_Title && m_nextState != State_Title && m_nextState != State_StartGame)
@@ -265,9 +267,10 @@ namespace exo
 		{
 			print(m_renderer, Vector2(xRes/2 - 90, yRes/2 + 50), "game over");
 		}
+		m_renderer.pop();
 
-		m_renderer.translate(xRes / 2, yRes / 2);
-		float screenScale = min(xRes / 640.0f, yRes / 480.0f);
+		m_renderer.translate(m_screenSize.x / 2, m_screenSize.y / 2);
+		float screenScale = min(m_screenSize.x / 640.0f, m_screenSize.y / 480.0f);
 		m_renderer.scale(m_scale * screenScale, m_scale * screenScale);
 		m_renderer.translate(-m_player.getPosition().x * 100, -m_player.getPosition().y * 100);
 		m_renderer.scale(100, 100);
@@ -279,8 +282,7 @@ namespace exo
 
 	void Application::setScreenSize(uint width, uint height)
 	{
-		xRes = (int)width;
-		yRes = (int)height;
+		m_screenSize.set(width, height);
 	}
 
 	ApplicationBase* newApplication(GameFramework& gameFramework)

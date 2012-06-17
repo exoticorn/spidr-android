@@ -14,7 +14,7 @@ namespace exo
 		m_isTransformDirty = true;
 	}
 
-	void Renderer::beginRendering(uint screenWidth, uint screenHeight)
+	void Renderer::beginRendering(float screenWidth, float screenHeight)
 	{
 		m_sp = 0;
 		m_stack[0].scale.set(2.0f / screenWidth, -2.0f / screenHeight);

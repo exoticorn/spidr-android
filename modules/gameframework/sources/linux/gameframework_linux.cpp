@@ -4,12 +4,15 @@
 
 namespace exo
 {
+	static uint screenWidth = 1024;
+	static uint screenHeight = 768;
+
 	GameFrameworkLinux::GameFrameworkLinux()
 	{
 		SDL_Init(SDL_INIT_VIDEO);
-		m_pScreen = SDL_SetVideoMode(1024, 768, 32, SDL_OPENGL);
+		m_pScreen = SDL_SetVideoMode(screenWidth, screenHeight, 32, SDL_OPENGL);
 		createApplication();
-		getApplication()->setScreenSize(1024, 768);
+		getApplication()->setScreenSize(screenWidth, screenHeight);
 
 		m_isMouseDown = false;
 		m_touch.id = 0;

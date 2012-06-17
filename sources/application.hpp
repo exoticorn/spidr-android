@@ -38,6 +38,8 @@ namespace exo
 		bool			m_pause;
 		int				m_hiScore;
 
+		Vector2			m_screenSize;
+
 		GameState		m_gameState;
 		GameState		m_nextState;
 

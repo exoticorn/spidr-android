@@ -11,7 +11,7 @@ namespace exo
 	public:
 		Renderer(GLContext& context);
 
-		void			beginRendering(uint screenWidth, uint screenHeight);
+		void			beginRendering(float screenWidth, float screenHeight);
 
 		void			translate(float x, float y);
 		void			scale(float x, float y);
