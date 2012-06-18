@@ -39,6 +39,8 @@ namespace exo
 		ApplicationBase*	m_pApplication;
 		GLContext			m_glContext;
 		Timer				m_timer;
+		float				m_lastTimestep;
+		float				m_timeOffset;
 	};
 
 	extern ApplicationBase* newApplication(GameFramework& gameFramework);

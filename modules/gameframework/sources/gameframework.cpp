@@ -8,6 +8,8 @@ namespace exo
 	GameFramework::GameFramework()
 	{
 		m_pApplication = nullptr;
+		m_lastTimestep = 1.0f / 60;
+		m_timeOffset = 0.0f;
 	}
 
 	void GameFramework::createApplication()
@@ -27,7 +29,10 @@ namespace exo
 
 		if(m_pApplication)
 		{
-			float timeStep = min(0.1f, m_timer.getElapsedTime());
+			float target = m_timeOffset + m_timer.getElapsedTime();
+			float timeStep = m_lastTimestep + (target - m_lastTimestep) * 0.2f;
+			m_timeOffset = target - timeStep;
+			timeStep = min(0.1f, timeStep);
 			m_timer.reset();
 			m_pApplication->update(timeStep);
 		}
