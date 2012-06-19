@@ -11,6 +11,9 @@ namespace exo
 
 	template <typename T>
 	T abs(T v) { return v < 0 ? -v : v; }
+
+	template <typename T>
+	T clamp(T a, T b, T v) { return v < a ? a : (v > b ? b : v); }
 }
 
 #endif

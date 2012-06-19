@@ -31,7 +31,7 @@ namespace exo
 		{
 			float target = m_timeOffset + m_timer.getElapsedTime();
 			float timeStep = m_lastTimestep + (target - m_lastTimestep) * 0.2f;
-			m_timeOffset = target - timeStep;
+			m_timeOffset = clamp(-0.1f, 0.1f, target - timeStep);
 			timeStep = min(0.1f, timeStep);
 			m_timer.reset();
 			m_pApplication->update(timeStep);
