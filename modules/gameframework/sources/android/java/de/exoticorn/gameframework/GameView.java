@@ -10,13 +10,11 @@ public class GameView extends GLSurfaceView
 {
 	long m_gameFramework = 0;
 	
-	public GameView(Context context)
+	public GameView(Context context, long gameFramework)
 	{
 		super(context);
 		
-		Native.loadLib();
-		
-		m_gameFramework = Native.createGameFramework();
+		m_gameFramework = gameFramework;
 		
 		setEGLContextClientVersion(2);
 		

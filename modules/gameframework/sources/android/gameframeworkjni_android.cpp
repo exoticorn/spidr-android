@@ -1,5 +1,7 @@
 #include "gameframeworkjni_android.hpp"
 #include "exo/gameframework/gameframework.hpp"
+#include "exo/gameframework/applicationbase.hpp"
+#include "exo/base/functions.hpp"
 
 namespace exo
 {
@@ -36,5 +38,21 @@ namespace exo
 		EXO_USE_PARAMETER(pEnv);
 		EXO_USE_PARAMETER(self);
 		reinterpret_cast<GameFrameworkAndroid*>(gameFramework)->handleTouchInput(id, down, x, y);
+	}
+
+	void Java_de_exoticorn_gameframework_Native_fillAudioBuffer(JNIEnv* pEnv, jobject self, jlong gameFramework, jshortArray buffer)
+	{
+		EXO_USE_PARAMETER(self);
+		GameFrameworkAndroid* pGameFramework = reinterpret_cast<GameFrameworkAndroid*>(gameFramework);
+		sint16 cBuffer[1024*2];
+		int numSamples = pEnv->GetArrayLength(buffer) / 2;
+		int pos = 0;
+		while(pos < numSamples)
+		{
+			int batchSize = min(numSamples - pos, 1024);
+			pGameFramework->getApplication()->fillAudioBuffer(cBuffer, (uint)batchSize);
+			pEnv->SetShortArrayRegion(buffer, pos, batchSize * 2, cBuffer);
+			pos += batchSize * 2;
+		}
 	}
 }
