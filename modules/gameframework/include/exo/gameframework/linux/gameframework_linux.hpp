@@ -16,6 +16,8 @@ namespace exo
 		virtual const Touch&	getTouch(uint) const { return m_touch; }
 
 	private:
+		static void			audioCallback(void* pUser, unsigned char* pBuffer, int size);
+
 		SDL_Surface*		m_pScreen;
 
 		bool				m_isMouseDown;

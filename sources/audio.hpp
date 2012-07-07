@@ -2,6 +2,7 @@
 #define _AUDIO_HPP
 
 #include "fxsynth.hpp"
+#include "exo/base/types.hpp"
 
 class Audio
 {
@@ -9,9 +10,9 @@ public:
 	Audio();
 	~Audio();
 	
-private:
+	void fillBuffer(exo::sint16 *pBuffer, exo::uint numSamples);
 
-	static void callback(void *pUserData, unsigned char *pStream, int len);
+private:
 	
 	FxSynth m_synth;
 };

@@ -285,6 +285,11 @@ namespace exo
 		m_screenSize.set(width, height);
 	}
 
+	void Application::fillAudioBuffer(sint16* pBuffer, uint numSamples)
+	{
+		m_pAudio->fillBuffer(pBuffer, numSamples);
+	}
+
 	ApplicationBase* newApplication(GameFramework& gameFramework)
 	{
 		return new Application(gameFramework);

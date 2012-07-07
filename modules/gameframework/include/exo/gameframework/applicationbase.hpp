@@ -15,6 +15,7 @@ namespace exo
 		virtual void	update(float timeStep) = 0;
 		virtual void	render() = 0;
 		virtual void	setScreenSize(uint width, uint height) = 0;
+		virtual void	fillAudioBuffer(sint16* pBuffer, uint numSamples); // to shorts (left + right) per sample
 
 		GameFramework&	m_gameFramework;
 	};

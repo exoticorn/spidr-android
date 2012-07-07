@@ -22,6 +22,7 @@ namespace exo
 		virtual void	update(float timeStep);
 		virtual void	render();
 		virtual void	setScreenSize(uint width, uint height);
+		virtual void	fillAudioBuffer(sint16* pBuffer, uint numSamples);
 
 	private:
 		Audio*			m_pAudio;
