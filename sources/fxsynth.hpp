@@ -33,6 +33,7 @@ private:
 	const SynthCode* m_pCurrentCode;
 	float m_volume;
 	bool m_dontAbort;
+	float m_freqFactor;
 };
 
 #endif // _FX_SYNTH_HPP

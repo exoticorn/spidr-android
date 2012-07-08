@@ -8,17 +8,17 @@ shoot:
 	5 -> +0 v0 n0 f0.01
 
 hit:
-	rect n1 f0.4
+	rect n1 f0.25
 	f0.1
 	5 -> f0
 
 collect:
-	wave d0.0 v0.2 f0.4
-	10 -> d0.5 +48 f1
+	wave d0.0 v0.2 f0.3
+	10 -> d0.5 +48 f0.4 v0.15
 	-12
-	5 -> +12
+	5 -> +12 v0.0
 	-48
-	2 -> +0
+	2 -> +0 v0.0
 
 start_pressed:
 	wave -0 d0.0 f0.4 v0.4

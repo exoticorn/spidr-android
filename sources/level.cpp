@@ -55,7 +55,7 @@ void Level::collectOrb(const Vector2& position)
 			m_pActiveOrbs[i] = false;
 			m_numOrbsLeft--;
 			score += 100;
-			FxSynth::playSfx(sfx_collect);
+			FxSynth::playSfx(sfx_collect, 1, true);
 		}
 	}
 }

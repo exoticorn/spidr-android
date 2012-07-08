@@ -1,5 +1,7 @@
 #include "fxsynth.hpp"
+#include "exo/base/functions.hpp"
 #include <math.h>
+#include <stdlib.h>
 
 const FxSynth::SynthCode fxStopCode = { FxSynth::EndOfCode, 0, 0, 0, 0, 0 };
 FxSynth* FxSynth::m_pInstance = 0;
@@ -12,6 +14,7 @@ FxSynth::FxSynth()
 	m_pCurrentCode = &fxStopCode;
 	m_pInstance = this;
 	m_dontAbort = false;
+	m_freqFactor = 1;
 }
 
 void FxSynth::playSfx(SynthCode* pCode, float volume, bool dontAbort)
@@ -22,6 +25,7 @@ void FxSynth::playSfx(SynthCode* pCode, float volume, bool dontAbort)
 		m_pInstance->m_pCurrentCode = pCode;
 		m_pInstance->m_volume = volume;
 		m_pInstance->m_dontAbort = dontAbort;
+		m_pInstance->m_freqFactor = powf(2.0f, ((rand() & 255) - 128) / 512.0f);
 	}
 //	SDL_UnlockAudio();
 }
@@ -68,7 +72,7 @@ void FxSynth::render(float* pBuffer, int numSamples)
 				break;
 			}
 			
-			m_osciPhase += code.osciInc;
+			m_osciPhase += code.osciInc * m_freqFactor;
 			if(m_osciPhase >= 1)
 			{
 				m_osciPhase -= 1;
@@ -81,11 +85,11 @@ void FxSynth::render(float* pBuffer, int numSamples)
 			float noise = (m_rngState / 2147483648.0f) - 1;
 			sample += noise * code.noiseVolume;
 			
-			m_filterLow += code.filterFreq * m_filterBand;
+			m_filterLow += code.filterFreq * m_freqFactor * m_filterBand;
 			float high = sample - m_filterLow - m_filterBand;
-			m_filterBand += code.filterFreq * high;
+			m_filterBand += code.filterFreq * m_freqFactor * high;
 			
-			*pBuffer++ = m_filterLow * m_volume;
+			*pBuffer++ = exo::clamp(-1.0f, 1.0f, m_filterLow * m_volume);
 		}
 		
 		m_samplesLeft -= samplesToRender;
