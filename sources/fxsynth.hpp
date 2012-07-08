@@ -1,6 +1,8 @@
 #ifndef _FX_SYNTH_HPP
 #define _FX_SYNTH_HPP
 
+#include "exo/base/mutex.hpp"
+
 class FxSynth
 {
 public:
@@ -34,6 +36,7 @@ private:
 	float m_volume;
 	bool m_dontAbort;
 	float m_freqFactor;
+	exo::Mutex m_mutex;
 };
 
 #endif // _FX_SYNTH_HPP
