@@ -8,6 +8,8 @@ abstract public class GameActivity extends Activity
 	GameView m_view;
 	AudioPlayer m_audioPlayer;
 	long m_gameFramework;
+	boolean m_hasFocus = true;
+	boolean m_isWaitingForFocus = false;
 	
 	@Override protected void onCreate(Bundle icicle)
 	{
@@ -29,12 +31,36 @@ abstract public class GameActivity extends Activity
 		super.onPause();
 		m_view.onPause();
 		m_audioPlayer.onPause();
+		m_isWaitingForFocus = false;
 	}
 	
 	@Override protected void onResume()
 	{
 		super.onResume();
+		if(m_hasFocus)
+		{
+			handleResume();
+		}
+		else
+		{
+			m_isWaitingForFocus = true;
+		}
+	}
+	
+	@Override public void onWindowFocusChanged(boolean hasFocus)
+	{
+		super.onWindowFocusChanged(hasFocus);
+		if(hasFocus && m_isWaitingForFocus)
+		{
+			handleResume();
+		}
+		m_hasFocus = hasFocus;
+	}
+	
+	void handleResume()
+	{
 		m_view.onResume();
 		m_audioPlayer.onResume();
-	}	
+		m_isWaitingForFocus = false;
+	}
 }
