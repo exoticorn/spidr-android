@@ -19,6 +19,11 @@ public class GameView extends GLSurfaceView
 		setEGLContextClientVersion(2);
 		
 		setRenderer(new Renderer());
+		
+		if(android.os.Build.VERSION.SDK_INT >= android.os.Build.VERSION_CODES.HONEYCOMB)
+		{
+			setSystemUiVisibility(SYSTEM_UI_FLAG_LOW_PROFILE);
+		}
 	}
 	
 	@Override public boolean onTouchEvent(MotionEvent event)
