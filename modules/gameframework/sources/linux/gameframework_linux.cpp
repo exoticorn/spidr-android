@@ -9,6 +9,7 @@ namespace exo
 
 	GameFrameworkLinux::GameFrameworkLinux()
 	{
+		setStoragePath(".");
 		SDL_Init(SDL_INIT_VIDEO);
 		m_pScreen = SDL_SetVideoMode(screenWidth, screenHeight, 32, SDL_OPENGL);
 		createApplication();
@@ -69,6 +70,7 @@ namespace exo
 			render();
 			SDL_GL_SwapBuffers();
 		}
+		getApplication()->onStop();
 	}
 
 	void GameFrameworkLinux::audioCallback(void* pUser, unsigned char* pBuffer, int size)

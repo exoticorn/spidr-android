@@ -13,6 +13,8 @@ namespace exo
 {
 	enum GameState { State_LevelFadeIn, State_Level, State_LevelFadeOut, State_GameOver, State_Title, State_StartGame, State_ToTitle };
 
+	class Serializer;
+
 	class Application : public ApplicationBase
 	{
 	public:
@@ -23,8 +25,13 @@ namespace exo
 		virtual void	render();
 		virtual void	setScreenSize(uint width, uint height);
 		virtual void	fillAudioBuffer(sint16* pBuffer, uint numSamples);
+		virtual void	onStop();
 
 	private:
+		void			load();
+		void			save();
+		void			serialize(Serializer& serializer);
+
 		Audio*			m_pAudio;
 		Level			m_level;
 		Player			m_player;

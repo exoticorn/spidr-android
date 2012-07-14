@@ -10,6 +10,8 @@
 #include "math.hpp"
 #include "sfx.hpp"
 #include "exo/base/functions.hpp"
+#include "exo/base/file.hpp"
+#include "exo/base/serializer.hpp"
 
 int score = 0;
 
@@ -98,10 +100,17 @@ namespace exo
 
 		m_gameState = State_ToTitle;
 		m_nextState = State_Title;
+
+		load();
 	}
 
 	Application::~Application()
 	{
+	}
+
+	void Application::onStop()
+	{
+		save();
 	}
 
 	void Application::update(float timeStep)
@@ -288,6 +297,49 @@ namespace exo
 	void Application::fillAudioBuffer(sint16* pBuffer, uint numSamples)
 	{
 		m_pAudio->fillBuffer(pBuffer, numSamples);
+	}
+
+	static const uint saveVersion = 1;
+	static const uint minSaveVersion = 1;
+
+	void Application::load()
+	{
+		char buffer[128];
+		snprintf(buffer, sizeof(buffer), "%s/game.save", m_gameFramework.getStoragePath());
+		File file(buffer);
+		if(file.isOpened())
+		{
+			uint size = file.getSize();
+			uint8* pBuffer = new uint8[size];
+			file.read(pBuffer, size);
+			Serializer serializer(pBuffer, size);
+			if(serializer.getDataVersion() <= saveVersion && serializer.getDataVersion() >= minSaveVersion &&
+					serializer.isValid())
+			{
+				serialize(serializer);
+			}
+			delete pBuffer;
+		}
+	}
+
+	void Application::save()
+	{
+		char buffer[128];
+		snprintf(buffer, sizeof(buffer), "%s/game.save", m_gameFramework.getStoragePath());
+
+		Serializer serializer(saveVersion);
+		serialize(serializer);
+
+		File file(buffer, File::Access_Write);
+		uint size;
+		const uint8* pData = serializer.getData(&size);
+		file.write(pData, size);
+		delete [] pData;
+	}
+
+	void Application::serialize(Serializer& serializer)
+	{
+		serializer.serialize(&m_hiScore);
 	}
 
 	ApplicationBase* newApplication(GameFramework& gameFramework)

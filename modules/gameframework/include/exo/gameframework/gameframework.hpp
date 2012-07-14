@@ -19,7 +19,7 @@ namespace exo
 		};
 
 		GameFramework();
-		virtual ~GameFramework() {}
+		virtual ~GameFramework();
 
 		void				createApplication();
 		void				destroyApplication();
@@ -30,10 +30,14 @@ namespace exo
 		virtual uint		getNumTouches() const = 0;
 		virtual const Touch&	getTouch(uint index) const = 0;
 
+		const char*			getStoragePath() const { return m_pStoragePath; }
+
 	protected:
 
 		void				update();
 		void				render();
+
+		void				setStoragePath(const char* pPath);
 
 	private:
 		ApplicationBase*	m_pApplication;
@@ -41,6 +45,7 @@ namespace exo
 		Timer				m_timer;
 		float				m_lastTimestep;
 		float				m_timeOffset;
+		char*				m_pStoragePath;
 	};
 
 	extern ApplicationBase* newApplication(GameFramework& gameFramework);

@@ -2,6 +2,8 @@
 #include "exo/gameframework/applicationbase.hpp"
 #include "exo/base/types.hpp"
 #include "exo/base/functions.hpp"
+#include <malloc.h>
+#include <string.h>
 
 namespace exo
 {
@@ -10,6 +12,12 @@ namespace exo
 		m_pApplication = nullptr;
 		m_lastTimestep = 1.0f / 60;
 		m_timeOffset = 0.0f;
+		m_pStoragePath = nullptr;
+	}
+
+	GameFramework::~GameFramework()
+	{
+		free(m_pStoragePath);
 	}
 
 	void GameFramework::createApplication()
@@ -44,5 +52,10 @@ namespace exo
 		{
 			m_pApplication->render();
 		}
+	}
+
+	void GameFramework::setStoragePath(const char* pPath)
+	{
+		m_pStoragePath = strdup(pPath);
 	}
 }
