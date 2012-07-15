@@ -5,11 +5,15 @@
 
 namespace exo
 {
-	jlong Java_de_exoticorn_gameframework_Native_createGameFramework(JNIEnv* pEnv, jobject self)
+	jlong Java_de_exoticorn_gameframework_Native_createGameFramework(JNIEnv* pEnv, jobject self, jstring storagePath)
 	{
-		EXO_USE_PARAMETER(pEnv);
 		EXO_USE_PARAMETER(self);
-		return reinterpret_cast<jlong>(new GameFrameworkAndroid());
+
+		const char* pStoragePath = pEnv->GetStringUTFChars(storagePath, nullptr);
+		jlong gameFramework = reinterpret_cast<jlong>(new GameFrameworkAndroid(pStoragePath));
+		pEnv->ReleaseStringUTFChars(storagePath, pStoragePath);
+
+		return gameFramework;
 	}
 
 	void Java_de_exoticorn_gameframework_Native_surfaceCreated(JNIEnv* pEnv, jobject self, jlong gameFramework)
@@ -24,6 +28,13 @@ namespace exo
 		EXO_USE_PARAMETER(pEnv);
 		EXO_USE_PARAMETER(self);
 		reinterpret_cast<GameFrameworkAndroid*>(gameFramework)->update();
+	}
+
+	void Java_de_exoticorn_gameframework_Native_onPause(JNIEnv* pEnv, jobject self, jlong gameFramework)
+	{
+		EXO_USE_PARAMETER(pEnv);
+		EXO_USE_PARAMETER(self);
+		reinterpret_cast<GameFrameworkAndroid*>(gameFramework)->getApplication()->onPause();
 	}
 
 	void Java_de_exoticorn_gameframework_Native_setScreenSize(JNIEnv* pEnv, jobject self, jlong gameFramework, jint width, jint height)

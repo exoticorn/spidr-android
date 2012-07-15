@@ -70,7 +70,7 @@ namespace exo
 			render();
 			SDL_GL_SwapBuffers();
 		}
-		getApplication()->onStop();
+		getApplication()->onPause();
 	}
 
 	void GameFrameworkLinux::audioCallback(void* pUser, unsigned char* pBuffer, int size)

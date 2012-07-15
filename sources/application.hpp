@@ -25,7 +25,7 @@ namespace exo
 		virtual void	render();
 		virtual void	setScreenSize(uint width, uint height);
 		virtual void	fillAudioBuffer(sint16* pBuffer, uint numSamples);
-		virtual void	onStop();
+		virtual void	onPause();
 
 	private:
 		void			load();

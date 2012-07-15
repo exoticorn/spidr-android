@@ -108,7 +108,7 @@ namespace exo
 	{
 	}
 
-	void Application::onStop()
+	void Application::onPause()
 	{
 		save();
 	}

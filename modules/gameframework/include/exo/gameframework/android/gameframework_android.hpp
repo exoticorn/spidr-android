@@ -8,7 +8,7 @@ namespace exo
 	class GameFrameworkAndroid : public GameFramework
 	{
 	public:
-		GameFrameworkAndroid();
+		GameFrameworkAndroid(const char* pStoragePath);
 		~GameFrameworkAndroid();
 
 		virtual uint		getNumTouches() const;

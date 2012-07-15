@@ -4,8 +4,9 @@
 
 namespace exo
 {
-	GameFrameworkAndroid::GameFrameworkAndroid()
+	GameFrameworkAndroid::GameFrameworkAndroid(const char* pStoragePath)
 	{
+		setStoragePath(pStoragePath);
 		createApplication();
 		m_touch.id = 0;
 		m_hasTouch = false;

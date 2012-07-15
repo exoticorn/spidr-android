@@ -17,7 +17,7 @@ abstract public class GameActivity extends Activity
 		
 		Native.loadLib();
 		
-		m_gameFramework = Native.createGameFramework();
+		m_gameFramework = Native.createGameFramework(getFilesDir().getAbsolutePath());
 		
 		m_view = new GameView(getApplication(), m_gameFramework);
 		setContentView(m_view);
@@ -32,6 +32,7 @@ abstract public class GameActivity extends Activity
 		m_view.onPause();
 		m_audioPlayer.onPause();
 		m_isWaitingForFocus = false;
+		Native.onPause(m_gameFramework);
 	}
 	
 	@Override protected void onResume()
