@@ -17,6 +17,8 @@ namespace exo
 		const uint8*	getData(uint* pSize);	// returns new buffer. Application needs to delete this later.
 		uint8			getDataVersion() const { return m_pBuffer[0]; }
 
+		bool			isReading() const { return m_isReading; }
+
 		template <typename T>
 		void			serialize(T* pValue) { serialize(pValue, sizeof(T)); }
 

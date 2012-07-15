@@ -3,6 +3,7 @@
 #include "collision.hpp"
 #include "sfx.hpp"
 #include "renderer.hpp"
+#include "exo/base/serializer.hpp"
 #include <stdio.h>
 #include <string.h>
 
@@ -77,3 +78,11 @@ void Level::render(exo::Renderer& renderer) const
 	}
 }
 
+void Level::serialize(exo::Serializer& serializer)
+{
+	serializer.serialize(&m_numOrbsLeft);
+	for(int i = 0; i < m_pLevelData->numOrbs; ++i)
+	{
+		serializer.serialize(&m_pActiveOrbs[i]);
+	}
+}

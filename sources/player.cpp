@@ -168,3 +168,13 @@ void Player::render(exo::Renderer& renderer, bool renderAiming)
 		}
 	}	
 }
+
+void Player::serialize(exo::Serializer& serializer)
+{
+	serializer.serialize(&m_position);
+	serializer.serialize(&m_movement);
+	serializer.serialize(&m_aimDir);
+	serializer.serialize(&m_throwDir);
+	serializer.serialize(&m_hookPosition);
+	serializer.serialize(&m_hookState);
+}

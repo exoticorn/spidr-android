@@ -8,6 +8,7 @@ struct Circle;
 namespace exo
 {
 	class Renderer;
+	class Serializer;
 }
 
 struct LevelData
@@ -38,6 +39,8 @@ public:
 	
 	void render(exo::Renderer& renderer) const;
 	
+	void serialize(exo::Serializer& serializer);
+
 private:
 
 	const LevelData* m_pLevelData;

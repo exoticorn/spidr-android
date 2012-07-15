@@ -340,6 +340,27 @@ namespace exo
 	void Application::serialize(Serializer& serializer)
 	{
 		serializer.serialize(&m_hiScore);
+		serializer.serialize(&score);
+		GameState state = m_gameState;
+		serializer.serialize(&state);
+
+		if(state != State_Title && state != State_ToTitle && state != State_StartGame)
+		{
+			m_gameState = state;
+			serializer.serialize(&m_nextState);
+			serializer.serialize(&m_currentLevel);
+			serializer.serialize(&m_stateTime);
+			serializer.serialize(&m_timeLeft);
+			serializer.serialize(&m_timeIncrement);
+
+			if(serializer.isReading())
+			{
+				m_level.initialize(pLevels[m_currentLevel]);
+				m_player.initialize(&m_level);
+			}
+			m_level.serialize(serializer);
+			m_player.serialize(serializer);
+		}
 	}
 
 	ApplicationBase* newApplication(GameFramework& gameFramework)

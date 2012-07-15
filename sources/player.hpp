@@ -2,6 +2,7 @@
 #define __PLAYER_HPP
 
 #include "math.hpp"
+#include "exo/base/serializer.hpp"
 
 class Level;
 namespace exo
@@ -27,6 +28,7 @@ public:
 	const Vector2& getPosition() const { return m_position; }
 	void update(float timeStep, const Input& input);
 	void render(exo::Renderer& renderer, bool renderAiming);
+	void serialize(exo::Serializer& serializer);
 
 private:
 	void resolvePosition(float moveFactor, int depth, float timeStep);
