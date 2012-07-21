@@ -17,6 +17,7 @@ if @build_tags.include? 'android'
 	add_global_path :java_source_dirs, 'sources/android/java'
 	@project.globals.android_project_package = 'de.exoticorn.spidr'
 	@project.globals.android_project_activity = 'SpidrActivity'
+	add_global_path :android_resource_dir, 'resources'
 end
 
 add_global_path :cpp_include_dir, 'sources'

@@ -203,6 +203,7 @@ define_compiler(CompilerBase, :input_pattern => tag('ANDROID_MANIFEST') | tag('.
 			exit 1
 		end
 		trace "Creating apk with manifest %s", manifest.path
+		resource_dirs = @project.global_context.get_attribute_set :android_resource_dir
 		sh @project.globals.android_sdk_path + 'platform-tools/aapt',
 			'package',
 			'--no-crunch',
@@ -210,6 +211,7 @@ define_compiler(CompilerBase, :input_pattern => tag('ANDROID_MANIFEST') | tag('.
 			'--debug-mode',
 			'-M', manifest.path,
 			'-F', (output_name.to_s + '.res'),
+			resource_dirs.map {|d| ['-S', d] },
 			'-I', @project.globals.android_sdk_path + 'platforms/android-8/android.jar'
 		sh 'unzip', '-q', '-o', (output_name.to_s + '.res'), '-d', @output_path + 'apk'
 		unless @project.build_tags.include?('master')
@@ -218,7 +220,7 @@ define_compiler(CompilerBase, :input_pattern => tag('ANDROID_MANIFEST') | tag('.
 		current_dir = Dir.getwd
 		Dir.chdir(@output_path + 'apk')
 		unaligned_apk = @output_path + 'unaligned.apk'
-		sh 'zip', '-9', '-r', '-q', '-FS', unaligned_apk, 'lib', 'classes.dex', 'AndroidManifest.xml', 'gamebuild'
+		sh 'zip', '-9', '-r', '-q', '-FS', unaligned_apk, 'lib', 'res', 'resources.arsc', 'classes.dex', 'AndroidManifest.xml', 'gamebuild'
 		Dir.chdir(current_dir)
 		trace 'Signing apk'
 		sh 'jarsigner',
