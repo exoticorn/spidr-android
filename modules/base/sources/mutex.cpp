@@ -21,4 +21,14 @@ namespace exo
 	{
 		pthread_mutex_unlock(&m_mutex);
 	}
+
+	MutexLock::MutexLock(Mutex& mutex) : m_mutex(mutex)
+	{
+		m_mutex.lock();
+	}
+
+	MutexLock::~MutexLock()
+	{
+		m_mutex.unlock();
+	}
 }

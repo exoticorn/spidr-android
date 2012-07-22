@@ -57,6 +57,19 @@ namespace exo
 				case SDL_QUIT:
 					quit = true;
 					break;
+				case SDL_KEYDOWN:
+					switch(event.key.keysym.sym)
+					{
+					case SDLK_ESCAPE:
+						if(!getApplication()->onBackPressed())
+						{
+							quit = true;
+						}
+						break;
+					default:
+						break;
+					}
+					break;
 				}
 			}
 

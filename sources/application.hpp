@@ -6,6 +6,7 @@
 #include "player.hpp"
 #include "math.hpp"
 #include "renderer.hpp"
+#include "exo/base/mutex.hpp"
 
 class Audio;
 
@@ -33,6 +34,7 @@ namespace exo
 		void			save();
 		void			serialize(Serializer& serializer);
 		void			setFadeZoom(float time);
+		float			getUIScale() const;
 
 		Audio*			m_pAudio;
 		Level			m_level;
@@ -53,7 +55,11 @@ namespace exo
 		GameState		m_nextState;
 		bool			m_isInGame;
 
+		const uint8*	m_pContinueSave;
+		uint			m_continueSaveSize;
+
 		Renderer		m_renderer;
+		Mutex			m_updateMutex;
 	};
 
 	ApplicationBase* newApplication(GameFramework& gameFramework);

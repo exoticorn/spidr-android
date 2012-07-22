@@ -51,6 +51,8 @@ namespace exo
 		{ 'v', obj_v },
 		{ 'p', obj_p },
 		{ 't', obj_t },
+		{ 'n', obj_n },
+		{ 'u', obj_u }
 	};
 
 	void print(Renderer& renderer, const Vector2& position, const char* pFormat, ...)
@@ -97,6 +99,9 @@ namespace exo
 		m_hiScore = 0;
 		m_isInGame = false;
 
+		m_pContinueSave = nullptr;
+		m_continueSaveSize = 0;
+
 		m_gameState = State_ToTitle;
 		m_nextState = State_Title;
 
@@ -120,6 +125,7 @@ namespace exo
 
 	void Application::update(float timeStep)
 	{
+		MutexLock lock(m_updateMutex);
 		m_input.buttonTriggered = false;
 		m_input.playDead = false;
 
@@ -129,6 +135,7 @@ namespace exo
 			m_input.button = true;
 			const GameFramework::Touch& touch = m_gameFramework.getTouch(0);
 			m_input.stick = Vector2(touch.x, touch.y) - m_screenSize * 0.5f;
+			m_input.pos = Vector2(touch.x, touch.y);
 		}
 		else
 		{
@@ -204,10 +211,23 @@ namespace exo
 			m_player.update(timeStep, m_input);
 			if(m_input.buttonTriggered)
 			{
-				FxSynth::playSfx(sfx_collect, 1, true);
-				m_gameState = State_LevelFadeOut;
-				m_nextState = State_StartGame;
-				m_stateTime = 0;
+				float uiScale = getUIScale();
+				float xRes = m_screenSize.x / uiScale;
+				float yRes = m_screenSize.y / uiScale;
+				Vector2 pos = m_input.pos * (1 / uiScale);
+
+				if(m_pContinueSave && pos.x > xRes * 0.75f && pos.y < yRes * 0.25f)
+				{
+					Serializer serializer(m_pContinueSave, m_continueSaveSize);
+					serialize(serializer);
+				}
+				else
+				{
+					FxSynth::playSfx(sfx_collect, 1, true);
+					m_gameState = State_LevelFadeOut;
+					m_nextState = State_StartGame;
+					m_stateTime = 0;
+				}
 			}
 			break;
 		case State_StartGame:
@@ -221,6 +241,9 @@ namespace exo
 			m_player.initialize(&m_level);
 			m_stateTime = 0;
 			score = 0;
+			delete [] m_pContinueSave;
+			m_pContinueSave = nullptr;
+			m_continueSaveSize = 0;
 			m_isInGame = true;
 			break;
 		case State_GameOver:
@@ -253,12 +276,17 @@ namespace exo
 		m_stateTime += timeStep;
 	}
 
+	float Application::getUIScale() const
+	{
+		return minf(1.0f, max(m_screenSize.x / 640.0f, m_screenSize.y / 480.0f));
+	}
+
 	void Application::render()
 	{
 		m_renderer.beginRendering(m_screenSize.x, m_screenSize.y);
 
 		m_renderer.push();
-		float uiScale = minf(1.0f, max(m_screenSize.x / 640.0f, m_screenSize.y / 480.0f));
+		float uiScale = getUIScale();
 		m_renderer.scale(uiScale, uiScale);
 		float xRes = m_screenSize.x / uiScale;
 		float yRes = m_screenSize.y / uiScale;
@@ -269,6 +297,11 @@ namespace exo
 			print(m_renderer, Vector2(10, yRes - 32), "$%d", m_level.numOrbsLeft());
 			int intTimeLeft = ceil(m_timeLeft);
 			print(m_renderer, Vector2(xRes / 2 - 40, yRes - 32), "%d:%02d", intTimeLeft / 60, intTimeLeft % 60);
+		}
+
+		if(m_gameState == State_Title && m_pContinueSave != nullptr)
+		{
+			print(m_renderer, Vector2(xRes - 20 * 9.5f - 10, 40), "continue");
 		}
 
 		if(m_gameState == State_Title && fmodf(m_stateTime, 1) < 0.5f)
@@ -302,10 +335,16 @@ namespace exo
 		m_pAudio->fillBuffer(pBuffer, numSamples);
 	}
 
+	static const uint saveVersion = 3;
+	static const uint minSaveVersion = 1;
+
 	bool Application::onBackPressed()
 	{
 		if(m_isInGame)
 		{
+			Serializer serializer(saveVersion);
+			serialize(serializer);
+			m_pContinueSave = serializer.getData(&m_continueSaveSize);
 			m_gameState = State_ToTitle;
 			m_nextState = State_Title;
 			m_stateTime = 0;
@@ -313,9 +352,6 @@ namespace exo
 		}
 		return false;
 	}
-
-	static const uint saveVersion = 2;
-	static const uint minSaveVersion = 1;
 
 	void Application::load()
 	{
@@ -339,6 +375,7 @@ namespace exo
 
 	void Application::save()
 	{
+		MutexLock lock(m_updateMutex);
 		char buffer[128];
 		snprintf(buffer, sizeof(buffer), "%s/game.save", m_gameFramework.getStoragePath());
 
@@ -362,25 +399,36 @@ namespace exo
 		}
 
 		serializer.serialize(&m_isInGame);
-		if(!m_isInGame)
+		if(m_isInGame)
 		{
-			return;
+			serializer.serialize(&m_gameState);
+			serializer.serialize(&m_nextState);
+			serializer.serialize(&m_currentLevel);
+			serializer.serialize(&m_stateTime);
+			serializer.serialize(&m_timeLeft);
+			serializer.serialize(&m_timeIncrement);
+
+			if(serializer.isReading())
+			{
+				m_level.initialize(pLevels[m_currentLevel]);
+				m_player.initialize(&m_level);
+			}
+			m_level.serialize(serializer);
+			m_player.serialize(serializer);
 		}
-
-		serializer.serialize(&m_gameState);
-		serializer.serialize(&m_nextState);
-		serializer.serialize(&m_currentLevel);
-		serializer.serialize(&m_stateTime);
-		serializer.serialize(&m_timeLeft);
-		serializer.serialize(&m_timeIncrement);
-
-		if(serializer.isReading())
+		else
 		{
-			m_level.initialize(pLevels[m_currentLevel]);
-			m_player.initialize(&m_level);
+			serializer.serialize(&m_continueSaveSize);
+			if(m_continueSaveSize)
+			{
+				if(serializer.isReading())
+				{
+					delete [] m_pContinueSave;
+					m_pContinueSave = new uint8[m_continueSaveSize];
+				}
+				serializer.serialize(const_cast<uint8*>(m_pContinueSave), m_continueSaveSize);
+			}
 		}
-		m_level.serialize(serializer);
-		m_player.serialize(serializer);
 	}
 
 	ApplicationBase* newApplication(GameFramework& gameFramework)

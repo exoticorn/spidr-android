@@ -14,6 +14,7 @@ struct Input
 {
 	Input() { stick.clear(); button = buttonTriggered = false; }
 	Vector2 stick;
+	Vector2	pos;
 	bool button;
 	bool buttonTriggered;
 	bool playDead;

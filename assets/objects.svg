@@ -1,5 +1,6 @@
 <?xml version="1.0" encoding="UTF-8" standalone="no"?>
 <!-- Created with Inkscape (http://www.inkscape.org/) -->
+
 <svg
    xmlns:dc="http://purl.org/dc/elements/1.1/"
    xmlns:cc="http://creativecommons.org/ns#"
@@ -14,7 +15,7 @@
    height="1052.3622"
    id="svg2"
    sodipodi:version="0.32"
-   inkscape:version="0.46"
+   inkscape:version="0.48.3.1 r9886"
    sodipodi:docname="objects.svg"
    inkscape:output_extension="org.inkscape.output.svg.inkscape">
   <metadata
@@ -29,8 +30,8 @@
     </rdf:RDF>
   </metadata>
   <sodipodi:namedview
-     inkscape:window-height="544"
-     inkscape:window-width="768"
+     inkscape:window-height="1000"
+     inkscape:window-width="1215"
      inkscape:pageshadow="2"
      inkscape:pageopacity="0.0"
      guidetolerance="10.0"
@@ -41,12 +42,13 @@
      pagecolor="#ffffff"
      id="base"
      showgrid="false"
-     inkscape:zoom="1.3277207"
-     inkscape:cx="255.2653"
-     inkscape:cy="719.07643"
-     inkscape:window-x="181"
+     inkscape:zoom="3.7553612"
+     inkscape:cx="94.252546"
+     inkscape:cy="933.64748"
+     inkscape:window-x="65"
      inkscape:window-y="24"
-     inkscape:current-layer="layer1" />
+     inkscape:current-layer="layer1"
+     inkscape:window-maximized="1" />
   <defs
      id="defs4">
     <inkscape:perspective
@@ -79,16 +81,17 @@
          sodipodi:nodetypes="ccc" />
     </g>
     <g
-       transform="matrix(0.4995771,0,0,0.4995771,24.767555,-449.99666)"
        id="obj-spidr">
       <path
-         d="M 74.751287,999.83423 C 74.751287,1013.2167 63.890127,1024.0779 50.507626,1024.0779 C 37.125124,1024.0779 26.263964,1013.2167 26.263964,999.83423 C 26.263964,986.45173 37.125124,975.59057 50.507626,975.59057 C 63.890127,975.59057 74.751287,986.45173 74.751287,999.83423 z"
+         d="m 62.111586,49.497625 c 0,6.685576 -5.425987,12.111582 -12.111578,12.111582 -6.685591,0 -12.111578,-5.426006 -12.111578,-12.111582 0,-6.68559 5.425987,-12.111577 12.111578,-12.111577 6.685591,0 12.111578,5.425987 12.111578,12.111577 z"
          id="path2385"
-         style="fill:none;fill-rule:evenodd;stroke:#000000;stroke-width:1px;stroke-linecap:butt;stroke-linejoin:miter;stroke-opacity:1" />
+         style="fill:none;stroke:#000000;stroke-width:0.49957711px;stroke-linecap:butt;stroke-linejoin:miter;stroke-opacity:1"
+         inkscape:connector-curvature="0" />
       <path
-         d="M 44.107143,976.82647 C 35.961393,978.34647 26.4305,989.55808 26.25,997.36218 C 25.836351,1015.2467 42.365068,1032.362 64.464286,1019.6837 C 54.95837,1017.387 45.069765,1012.5671 40.178572,1003.9693 C 36.565009,997.61739 35.46391,983.78418 44.107143,976.82647 z"
+         d="m 46.802474,38.003475 c -4.069431,0.759357 -8.830846,6.360421 -8.92102,10.259171 -0.20665,8.934696 8.050719,17.485108 19.090982,11.15132 -4.748938,-1.147379 -9.689059,-3.555291 -12.132587,-7.850555 -1.805253,-3.173268 -2.355337,-10.084023 1.962625,-13.559936 z"
          id="path3158"
-         style="fill:#000000;fill-opacity:0.43715844;fill-rule:evenodd;stroke:none;stroke-width:1px;stroke-linecap:butt;stroke-linejoin:miter;stroke-opacity:1" />
+         style="fill:#000000;fill-opacity:0.43715844;fill-rule:evenodd;stroke:none"
+         inkscape:connector-curvature="0" />
     </g>
     <rect
        width="100"
@@ -508,6 +511,22 @@
          id="path3685"
          d="M 219.92578,389.57216 L 219.92578,311.9956 L 277.16674,311.9956 L 277.16674,351.91364 L 219.17261,351.91364"
          style="fill:none;fill-rule:evenodd;stroke:#000000;stroke-width:1px;stroke-linecap:butt;stroke-linejoin:miter;stroke-opacity:1" />
+    </g>
+    <g
+       id="obj-n">
+      <path
+         inkscape:connector-curvature="0"
+         id="path4231"
+         d="m 317.14659,390.64155 0,-79.35321 54.85491,78.02178 0,-78.55436"
+         style="fill:none;stroke:#000000;stroke-width:1px;stroke-linecap:butt;stroke-linejoin:miter;stroke-opacity:1" />
+    </g>
+    <g
+       id="obj-u">
+      <path
+         inkscape:connector-curvature="0"
+         id="path4233"
+         d="m 423.66097,309.69062 0,79.35322 55.38749,0 0,-79.88579"
+         style="fill:none;stroke:#000000;stroke-width:1px;stroke-linecap:butt;stroke-linejoin:miter;stroke-opacity:1" />
     </g>
   </g>
 </svg>
