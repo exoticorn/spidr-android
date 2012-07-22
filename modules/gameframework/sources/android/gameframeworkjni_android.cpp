@@ -66,4 +66,11 @@ namespace exo
 			pos += batchSize * 2;
 		}
 	}
+
+	jboolean Java_de_exoticorn_gameframework_Native_onBackPressed(JNIEnv* pEnv, jobject self, jlong gameFramework)
+	{
+		EXO_USE_PARAMETER(self);
+		EXO_USE_PARAMETER(pEnv);
+		return reinterpret_cast<GameFrameworkAndroid*>(gameFramework)->getApplication()->onBackPressed();
+	}
 }

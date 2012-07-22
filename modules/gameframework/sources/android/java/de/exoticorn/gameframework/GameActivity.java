@@ -58,6 +58,14 @@ abstract public class GameActivity extends Activity
 		m_hasFocus = hasFocus;
 	}
 	
+	@Override public void onBackPressed()
+	{
+		if(!Native.onBackPressed(m_gameFramework))
+		{
+			finish();
+		}
+	}
+	
 	void handleResume()
 	{
 		m_view.onResume();

@@ -26,11 +26,13 @@ namespace exo
 		virtual void	setScreenSize(uint width, uint height);
 		virtual void	fillAudioBuffer(sint16* pBuffer, uint numSamples);
 		virtual void	onPause();
+		virtual bool	onBackPressed();
 
 	private:
 		void			load();
 		void			save();
 		void			serialize(Serializer& serializer);
+		void			setFadeZoom(float time);
 
 		Audio*			m_pAudio;
 		Level			m_level;
@@ -38,7 +40,6 @@ namespace exo
 		Input			m_input;
 
 		int				m_currentLevel;
-		bool			m_quitGame;
 		float			m_scale;
 		float			m_stateTime;
 		float			m_timeLeft;
@@ -50,6 +51,7 @@ namespace exo
 
 		GameState		m_gameState;
 		GameState		m_nextState;
+		bool			m_isInGame;
 
 		Renderer		m_renderer;
 	};

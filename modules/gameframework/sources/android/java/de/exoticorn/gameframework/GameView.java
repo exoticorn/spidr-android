@@ -2,13 +2,15 @@ package de.exoticorn.gameframework;
 
 import android.opengl.GLSurfaceView;
 import android.view.MotionEvent;
+import android.view.View;
 import android.content.Context;
 import javax.microedition.khronos.egl.EGLConfig;
 import javax.microedition.khronos.opengles.GL10;
 
-public class GameView extends GLSurfaceView
+public class GameView extends GLSurfaceView implements View.OnSystemUiVisibilityChangeListener
 {
 	long m_gameFramework = 0;
+	boolean m_reHideSystemUi = false;
 	
 	public GameView(Context context, long gameFramework)
 	{
@@ -19,11 +21,27 @@ public class GameView extends GLSurfaceView
 		setEGLContextClientVersion(2);
 		
 		setRenderer(new Renderer());
-		
+
+		hideSystemUi();
+		setOnSystemUiVisibilityChangeListener(this);
+	}
+	
+	@Override public void onSystemUiVisibilityChange(int visibility)
+	{
+		if((visibility & SYSTEM_UI_FLAG_LOW_PROFILE) == 0)
+		{
+			m_reHideSystemUi = true;
+		}
+	}
+	
+	private void hideSystemUi()
+	{
 		if(android.os.Build.VERSION.SDK_INT >= android.os.Build.VERSION_CODES.HONEYCOMB)
 		{
+			setSystemUiVisibility(0);
 			setSystemUiVisibility(SYSTEM_UI_FLAG_LOW_PROFILE);
 		}
+		m_reHideSystemUi = false;
 	}
 	
 	@Override public boolean onTouchEvent(MotionEvent event)
@@ -32,6 +50,10 @@ public class GameView extends GLSurfaceView
 		{
 		case MotionEvent.ACTION_DOWN:
 			sendTouchEvent(0, true, event.getX(), event.getY());
+			if(m_reHideSystemUi)
+			{
+				hideSystemUi();
+			}
 			break;
 		case MotionEvent.ACTION_MOVE:
 			sendTouchEvent(0, true, event.getX(), event.getY());

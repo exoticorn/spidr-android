@@ -13,6 +13,7 @@ namespace exo
 		JNIEXPORT void JNICALL Java_de_exoticorn_gameframework_Native_setScreenSize(JNIEnv* pEnv, jobject self, jlong gameFramework, jint width, jint height);
 		JNIEXPORT void JNICALL Java_de_exoticorn_gameframework_Native_handleTouchEvent(JNIEnv* pEnv, jobject self, jlong gameFramework, jint id, jboolean down, jfloat x, jfloat y);
 		JNIEXPORT void JNICALL Java_de_exoticorn_gameframework_Native_fillAudioBuffer(JNIEnv* pEnv, jobject self, jlong gameFramework, jshortArray buffer);
+		JNIEXPORT jboolean JNICALL Java_de_exoticorn_gameframework_Native_onBackPressed(JNIEnv* pEnv, jobject self, jlong gameFramework);
 	}
 }
 

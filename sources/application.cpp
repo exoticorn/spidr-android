@@ -89,14 +89,13 @@ namespace exo
 
 		m_currentLevel = 0;
 
-		m_quitGame = false;
-
 		m_scale = 1.0f;
 		m_stateTime = 0;
 		m_timeLeft = 60;
 		m_timeIncrement = 20;
 		m_pause = false;
 		m_hiScore = 0;
+		m_isInGame = false;
 
 		m_gameState = State_ToTitle;
 		m_nextState = State_Title;
@@ -111,6 +110,12 @@ namespace exo
 	void Application::onPause()
 	{
 		save();
+	}
+
+	void Application::setFadeZoom(float time)
+	{
+		time = time < 0 ? 0 : (time > 1 ? 1 : time);
+		m_scale = pow(2, (1-cosf((time) * 1.5f)) * 8);
 	}
 
 	void Application::update(float timeStep)
@@ -135,13 +140,9 @@ namespace exo
 		{
 		case State_LevelFadeIn:
 			m_player.update(0, m_input);
-			if(m_stateTime < 1)
+			setFadeZoom(1 - m_stateTime);
+			if(m_stateTime >= 1)
 			{
-				m_scale = pow(2, (1-cosf((1 - m_stateTime) * 1.5f)) * 8);
-			}
-			else
-			{
-				m_scale = 1;
 				m_gameState = m_nextState;
 			}
 			break;
@@ -164,7 +165,7 @@ namespace exo
 				{
 					m_timeLeft -= timeStep;
 				}
-				if(m_timeLeft < 0 || m_quitGame)
+				if(m_timeLeft < 0)
 				{
 					m_timeLeft = 0;
 					m_gameState = State_GameOver;
@@ -177,7 +178,7 @@ namespace exo
 		case State_LevelFadeOut:
 			m_input.playDead = true;
 			m_player.update(timeStep, m_input);
-			m_scale = pow(2, ((1-cosf(m_stateTime)) * 1.5f) * 8);
+			setFadeZoom(m_stateTime);
 			if(m_stateTime > 1)
 			{
 				m_currentLevel++;
@@ -220,7 +221,7 @@ namespace exo
 			m_player.initialize(&m_level);
 			m_stateTime = 0;
 			score = 0;
-			m_quitGame = false;
+			m_isInGame = true;
 			break;
 		case State_GameOver:
 			m_input.playDead = true;
@@ -236,6 +237,8 @@ namespace exo
 			m_gameState = State_LevelFadeIn;
 			m_nextState = State_Title;
 			m_stateTime = 0;
+			m_isInGame = false;
+			setFadeZoom(1);
 			m_level.initialize(&level99);
 			m_player.initialize(&m_level);
 			FxSynth::playSfx(sfx_level_fade_in);
@@ -299,7 +302,19 @@ namespace exo
 		m_pAudio->fillBuffer(pBuffer, numSamples);
 	}
 
-	static const uint saveVersion = 1;
+	bool Application::onBackPressed()
+	{
+		if(m_isInGame)
+		{
+			m_gameState = State_ToTitle;
+			m_nextState = State_Title;
+			m_stateTime = 0;
+			return true;
+		}
+		return false;
+	}
+
+	static const uint saveVersion = 2;
 	static const uint minSaveVersion = 1;
 
 	void Application::load()
@@ -341,26 +356,31 @@ namespace exo
 	{
 		serializer.serialize(&m_hiScore);
 		serializer.serialize(&score);
-		GameState state = m_gameState;
-		serializer.serialize(&state);
-
-		if(state != State_Title && state != State_ToTitle && state != State_StartGame)
+		if(serializer.getDataVersion() < saveVersion)
 		{
-			m_gameState = state;
-			serializer.serialize(&m_nextState);
-			serializer.serialize(&m_currentLevel);
-			serializer.serialize(&m_stateTime);
-			serializer.serialize(&m_timeLeft);
-			serializer.serialize(&m_timeIncrement);
-
-			if(serializer.isReading())
-			{
-				m_level.initialize(pLevels[m_currentLevel]);
-				m_player.initialize(&m_level);
-			}
-			m_level.serialize(serializer);
-			m_player.serialize(serializer);
+			return;
 		}
+
+		serializer.serialize(&m_isInGame);
+		if(!m_isInGame)
+		{
+			return;
+		}
+
+		serializer.serialize(&m_gameState);
+		serializer.serialize(&m_nextState);
+		serializer.serialize(&m_currentLevel);
+		serializer.serialize(&m_stateTime);
+		serializer.serialize(&m_timeLeft);
+		serializer.serialize(&m_timeIncrement);
+
+		if(serializer.isReading())
+		{
+			m_level.initialize(pLevels[m_currentLevel]);
+			m_player.initialize(&m_level);
+		}
+		m_level.serialize(serializer);
+		m_player.serialize(serializer);
 	}
 
 	ApplicationBase* newApplication(GameFramework& gameFramework)
