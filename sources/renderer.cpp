@@ -62,6 +62,21 @@ namespace exo
 
 	void Renderer::drawLines(const float* pVertices, uint numVertices)
 	{
+		while(numVertices > 1)
+		{
+			uint numLines = min<uint>(numVertices / 2, BUFFER_SIZE);
+
+			prepareLines(m_buffer, pVertices, numLines);
+			pVertices += numLines * 4;
+
+			drawLines(m_buffer, numLines);
+
+			numVertices -= numLines * 2;
+		}
+	}
+
+	void Renderer::drawLines(const Line* pLines, uint numLines)
+	{
 		m_shader.use();
 		if(m_isTransformDirty)
 		{
@@ -71,39 +86,36 @@ namespace exo
 			m_isTransformDirty = false;
 		}
 
+		m_shader.setPositionAttribute(GL_FLOAT, GL_FALSE, sizeof(Vertex), &pLines->s1.pos);
+		m_shader.setNormalOffsetAttribute(GL_FLOAT, GL_FALSE, sizeof(Vertex), &pLines->s1.normal);
+		glDrawArrays(GL_TRIANGLE_STRIP, 0, numLines * 6);
+	}
+
+	void Renderer::prepareLines(Line* pBuffer, const float* pVertices, uint numLines)
+	{
 		const Vector2* pLines = reinterpret_cast<const Vector2*>(pVertices);
-		while(numVertices > 1)
+
+		for(uint i = 0; i < numLines; ++i)
 		{
-			uint numLines = min<uint>(numVertices / 2, BUFFER_SIZE);
+			Vector2 a = *pLines++;
+			Vector2 b = *pLines++;
+			Vector2 normal = Vector2(a.y - b.y, b.x - a.x).normalize();
 
-			for(uint i = 0; i < numLines; ++i)
-			{
-				Vector2 a = *pLines++;
-				Vector2 b = *pLines++;
-				Vector2 normal = Vector2(a.y - b.y, b.x - a.x).normalize();
-
-				Line& line = m_buffer[i];
-				line.a1.pos = a;
-				line.a1.normal = normal;
-				line.a1.offset = 1.5f;
-				line.a2.pos = a;
-				line.a2.normal = normal;
-				line.a2.offset = -1.5f;
-				line.b1.pos = b;
-				line.b1.normal = normal;
-				line.b1.offset = 1.5f;
-				line.b2.pos = b;
-				line.b2.normal = normal;
-				line.b2.offset = -1.5f;
-				line.s1 = line.a1;
-				line.s2 = line.b2;
-			}
-
-			m_shader.setPositionAttribute(GL_FLOAT, GL_FALSE, sizeof(Vertex), &m_buffer[0].s1.pos);
-			m_shader.setNormalOffsetAttribute(GL_FLOAT, GL_FALSE, sizeof(Vertex), &m_buffer[0].s1.normal);
-			glDrawArrays(GL_TRIANGLE_STRIP, 0, numLines * 6);
-
-			numVertices -= numLines * 2;
+			Line& line = pBuffer[i];
+			line.a1.pos = a;
+			line.a1.normal = normal;
+			line.a1.offset = 1.5f;
+			line.a2.pos = a;
+			line.a2.normal = normal;
+			line.a2.offset = -1.5f;
+			line.b1.pos = b;
+			line.b1.normal = normal;
+			line.b1.offset = 1.5f;
+			line.b2.pos = b;
+			line.b2.normal = normal;
+			line.b2.offset = -1.5f;
+			line.s1 = line.a1;
+			line.s2 = line.b2;
 		}
 	}
 }

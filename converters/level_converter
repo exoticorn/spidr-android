@@ -8,13 +8,15 @@ require 'svg_converter_base'
 
 def convert_level(file, filename, index)
 	outline = []
-	hatching = []
+	deco = []
+	fill = []
 	start = Vector2.new(0, 0)
 	orbs = []
 	read_svg(filename) do |obj|
 		if obj.is_a? Gfx
 			outline.concat(obj.outline)
-			hatching.concat(obj.hatching)
+			deco.concat(obj.deco)
+			fill.concat(obj.fill)
 		elsif obj.is_a? Helper
 			pos = obj.position
 			if obj.name == '100' || obj.name == 'start'
@@ -25,10 +27,17 @@ def convert_level(file, filename, index)
 		end
 	end
 	
-	printf "%s: %d lines\n", filename, outline.size + hatching.size
+	printf "%s: %d lines\n", filename, outline.size + deco.size + fill.size
 	
 	file.printf "const float level%d_gfxlines[] = {\n", index
-	values = (outline + hatching).flatten.map {|v| [v.x, v.y]}.flatten
+	values = (outline + deco).flatten.map {|v| [v.x, v.y]}.flatten
+	(0...values.size).step(4) do |i|
+		file.printf "\t%s,\n", values[i, 4].join(', ')
+	end
+	file.printf "};\n"
+	
+	file.printf "const float level%d_gfxfill[] = {\n", index
+	values = fill.flatten.map {|v| [v.x, v.y]}.flatten
 	(0...values.size).step(4) do |i|
 		file.printf "\t%s,\n", values[i, 4].join(', ')
 	end
@@ -48,7 +57,8 @@ def convert_level(file, filename, index)
 	
 	file.printf "const LevelData level%d = {\n", index
 	file.printf "Vector2(%f, %f),\n", start.x, start.y
-	file.printf "%d, level%d_gfxlines,\n", (outline.size + hatching.size) * 2, index
+	file.printf "%d, level%d_gfxlines,\n", (outline.size + deco.size) * 2, index
+	file.printf "%d, level%d_gfxfill,\n", fill.size * 2, index
 	file.printf "%d, (const Line*)level%d_collision,\n", outline.size, index
 	file.printf "%d, (const Vector2*)level%d_orbs,\n", orbs.size, index
 	file.printf "};\n"

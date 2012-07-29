@@ -2,12 +2,13 @@
 #define __LEVEL_HPP
 
 #include "math.hpp"
+#include "renderer.hpp"
+#include "exo/base/types.hpp"
 
 struct Line;
 struct Circle;
 namespace exo
 {
-	class Renderer;
 	class Serializer;
 }
 
@@ -16,6 +17,8 @@ struct LevelData
 	Vector2 startPosition;
 	int numGfxVertices;
 	const float* pVertices;
+	int numFillVertices;
+	const float* pFillVertices;
 	int numCollisionLines;
 	const Line* pCollisionLines;
 	int numOrbs;
@@ -44,6 +47,8 @@ public:
 private:
 
 	const LevelData* m_pLevelData;
+	exo::Renderer::Line*	m_pLevelLines;
+	exo::uint				m_numLines;
 	bool* m_pActiveOrbs;
 	int m_numOrbsLeft;
 };

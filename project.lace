@@ -22,11 +22,15 @@ end
 
 add_global_path :cpp_include_dir, 'sources'
 
-define_compiler(MultiFileCompiler, :name => 'level converter', :input_pattern => tag('.svg') & tag('LEVEL'), :output_name => 'gen_src/levels.cpp') do
-	def compile(files)
-		if Helpers::newer?(files.map {|f| f.path}, output_name)
+define_compiler(CompilerBase, :name => 'level converter', :input_pattern => tag('.svg') & tag('LEVEL'), :output_name => 'gen_src/levels.cpp') do
+	def process_files(files, num_jobs)
+		if Helpers::newer?(files.map {|f| f.path} + [@path + 'converters/level_converter', @path + 'converters/svg_converter_base.rb'], output_name)
 			sh Helpers::ruby_exe, @path + 'converters/level_converter', output_name, files.map {|f| f.path }
 		end
+	end
+
+	def output_files(files)
+		[InputFile.new(output_name, @output_tags, files.first.context)]
 	end
 end
 
@@ -41,7 +45,7 @@ end
 
 define_compiler(SingleFileCompiler, :name => 'gfx_converter', :input_pattern => tag('.svg') & tag('OBJECTS'), :output_name => 'gen_src/%.cpp') do
 	def compile(infile, outfile)
-		if Helpers::newer?(infile.path, outfile)
+		if Helpers::newer?([infile.path, @path + 'converters/gfx_converter', @path + 'converters/svg_converter_base.rb'], outfile)
 			sh Helpers::ruby_exe, @path + 'converters/gfx_converter', infile.path, outfile.to_s.sub(/\.cpp$/, '')
 		end
 		@project.global_context.add_attribute(:cpp_include_dir, @output_path)

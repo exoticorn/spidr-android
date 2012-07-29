@@ -76,7 +76,7 @@ class PathLexer
 		if @next
 			result = @next
 			@next = nil
-		elsif @path =~ /^([MmZzLlCc]|(\-?\d+(\.\d+)?))\s*/
+		elsif @path =~ /^([MmZzLlCc]|(\-?\d+(\.\d+)?(e\-?\d+)?))\s*/
 			result = $1
 			@path = $POSTMATCH
 		else
@@ -101,7 +101,7 @@ class PathLexer
 	
 	def get_parameter
 		result = get_next
-		raise "Parameter expected" if result =~ /[A-Za-z]/
+		raise "Parameter expected" if result !~ /\-?\d+(\.\d+)?(e\-?\d+)?/
 		return result.to_f
 	end
 	
@@ -116,13 +116,14 @@ class PathLexer
 	end
 	
 	def eof?
-		@path.empty?
+		@path.empty? && !@next
 	end
 end
 
 def subdivide_curve(p1, p2, p3, p4)
+	length = (p1 - p2).length + (p2 - p3).length + (p4 - p3).length
 	error = 2 - (p4-p1).normalize * (p2-p1).normalize - (p4-p1).normalize * (p4-p3).normalize
-	if error < 0.05 || error.nan?
+	if error < 0.05 || error.nan? || length < 0.1 || length / (p4 - p1).length < 1.05
 		return [[p1, p4]]
 	else
 		m1 = (p1+p2) * 0.5
@@ -153,6 +154,7 @@ def read_path(path)
 			if cur != subpath_start
 				lines << [cur, subpath_start]
 			end
+			cur = subpath_start
 		when 'L', 'l'
 			while lexer.is_param?
 				new = lexer.get_vector(cur)
@@ -201,8 +203,8 @@ def hatch_area(area, spacing)
 end
 
 Helper = Struct.new :name, :position
-Gfx = Struct.new :outline, :hatching
-GfxObject = Struct.new :name, :outline, :hatching
+Gfx = Struct.new :outline, :deco, :fill
+GfxObject = Struct.new :name, :outline, :deco, :fill
 
 def get_color(string, location)
 	if string =~ Regexp.new(location + '#(\\w+)')
@@ -241,20 +243,22 @@ def read_svg_rec(node, matrix, &block)
 	end
 	
 	outline = []
-	hatching = []
+	deco = []
+	fill = []
 	node.elements.each('g') do |group|
 		id = group.attributes['id']
 	
 		if id =~ /^obj-(\w+)$/
 			name = $1
 			read_svg_rec(group, matrix) do |obj|
-				block.call(GfxObject.new(name, obj.outline, obj.hatching))
+				block.call(GfxObject.new(name, obj.outline, obj.deco, obj.fill))
 			end
 		else
 			read_svg_rec(group, matrix) do |obj|
 				if obj.is_a?(Gfx)
 					outline.concat(obj.outline)
-					hatching.concat(obj.hatching)
+					deco.concat(obj.deco)
+					fill.concat(obj.fill)
 				else
 					block.call(obj)
 				end
@@ -267,11 +271,11 @@ def read_svg_rec(node, matrix, &block)
 		path_lines.map! {|p1, p2| [matrix.mul_vector(p1), matrix.mul_vector(p2)] }
 		style = path.attributes['style']
 		if style !~ /fill:none/
-			hatching.concat(hatch_area(path_lines, $hatching))
+			fill.concat(path_lines)
 		else
 			color = get_color(style, 'stroke:')
 			if color == '001'
-				hatching.concat(path_lines)
+				deco.concat(path_lines)
 			else
 				outline.concat(path_lines)
 			end
@@ -298,8 +302,8 @@ def read_svg_rec(node, matrix, &block)
 		end
 	end
 	
-	unless outline.empty? && hatching.empty?
-		block.call(Gfx.new(outline, hatching))
+	unless outline.empty? && deco.empty? && fill.empty?
+		block.call(Gfx.new(outline, deco, fill))
 	end
 end
 

@@ -21,6 +21,22 @@ namespace exo
 
 		void			drawLines(const float* pVertices, uint numVertices);
 
+		struct Vertex
+		{
+			Vector2 pos;
+			Vector2 normal;
+			float	offset;
+		};
+
+		struct Line
+		{
+			Vertex s1, a1, a2, b1, b2, s2;
+		};
+
+		void			drawLines(const Line* pLines, uint numLines);
+
+		static void		prepareLines(Line* pBuffer, const float* pVertices, uint numLines);
+
 	private:
 		enum {
 			MAX_STACK_DEPTH = 16,
@@ -38,18 +54,6 @@ namespace exo
 		LineShader		m_shader;
 		Vector2			m_pixelScale;
 		bool			m_isTransformDirty;
-
-		struct Vertex
-		{
-			Vector2 pos;
-			Vector2 normal;
-			float	offset;
-		};
-
-		struct Line
-		{
-			Vertex s1, a1, a2, b1, b2, s2;
-		};
 
 		Line			m_buffer[BUFFER_SIZE];
 	};

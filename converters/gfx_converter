@@ -12,7 +12,8 @@ outfile = ARGV.shift
 objects = {}
 read_svg(infile) do |obj|
 	next unless obj.is_a? GfxObject
-	lines = obj.outline + obj.hatching
+	lines = obj.outline + obj.deco
+	lines.concat(hatch_area(obj.fill, $hatching)) unless obj.fill.empty?
 	
 	all_points = lines.flatten
 	center = all_points.inject{|a, b| a + b} * (1.0 / all_points.size)
