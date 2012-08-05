@@ -208,7 +208,7 @@ define_compiler(CompilerBase, :input_pattern => tag('ANDROID_MANIFEST') | tag('.
 			'package',
 			'--no-crunch',
 			'-f',
-			'--debug-mode',
+			@project.build_tags.include?('master') ? [] : '--debug-mode',
 			'-M', manifest.path,
 			'-F', (output_name.to_s + '.res'),
 			resource_dirs.map {|d| ['-S', d] },
