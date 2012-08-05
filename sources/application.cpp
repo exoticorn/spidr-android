@@ -56,6 +56,7 @@ namespace exo
 	void Application::onPause()
 	{
 		save();
+		m_pause = true;
 	}
 
 	void Application::setFadeZoom(float time)
