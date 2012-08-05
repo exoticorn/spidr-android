@@ -10,41 +10,30 @@ namespace exo
 	{
 		m_pText = pText;
 		m_width = 20 * strlen(pText);
-		m_fade = strlen(pText);
+		m_fade = m_maxFade = max<int>(6, strlen(pText));
 		m_fadingOut = true;
 		m_pressed = false;
 		m_margin = 10;
 	}
 
-	void Button::fadeIn()
-	{
-		m_fade = strlen(m_pText);
-		m_fadingOut = false;
-	}
-
 	void Button::update(float timeStep, float posX, float posY)
 	{
-		if(m_fadingOut)
-		{
-			m_fade = max(0.0f, m_fade + timeStep * 30);
-		}
-		else
-		{
-			m_fade -= timeStep * 30;
-		}
+		m_fade += timeStep * (m_fadingOut ? 30 : -30);
+		m_fade = clamp(0.0f, m_maxFade, m_fade);
 		m_posX = posX;
 		m_posY = posY;
 
 		m_margin += ((m_pressed ? 15 : 10) - m_margin) * min(1.0f, timeStep * 30);
 	}
 
-	bool Button::handleInput(const Input& input)
+	bool Button::handleInput(Input& input)
 	{
 		if(input.button)
 		{
 			if(input.pos.x >= m_posX - 10 && input.pos.x < m_posX + m_width + 10 &&
 				input.pos.y >= m_posY - 10 && input.pos.y < m_posY + 30)
 			{
+				input.consumeInput();
 				m_pressed = true;
 			}
 			else
@@ -87,9 +76,9 @@ namespace exo
 		print(renderer, Vector2(m_posX, m_posY), m_fade, "%s", m_pText);
 		float margin = m_margin;
 		Vector2 base(m_posX - margin, m_posY - margin);
-		drawLine(renderer, m_fade / 3, base, Vector2(base.x + m_width + margin * 2, base.y));
-		drawLine(renderer, m_fade / 3, base, Vector2(base.x, base.y + 20 + margin * 2));
-		drawLine(renderer, m_fade / 3 + 1, Vector2(base.x + m_width + margin * 2, base.y), Vector2(base.x + m_width + margin * 2, base.y + 20 + margin * 2));
-		drawLine(renderer, m_fade / 3 + 1, Vector2(base.x, base.y + 20 + margin * 2), Vector2(base.x + m_width + margin * 2, base.y + 20 + margin * 2));
+		drawLine(renderer, m_fade / 3 - 1, base, Vector2(base.x + m_width + margin * 2, base.y));
+		drawLine(renderer, m_fade / 3 - 1, base, Vector2(base.x, base.y + 20 + margin * 2));
+		drawLine(renderer, m_fade / 3, Vector2(base.x + m_width + margin * 2, base.y), Vector2(base.x + m_width + margin * 2, base.y + 20 + margin * 2));
+		drawLine(renderer, m_fade / 3, Vector2(base.x, base.y + 20 + margin * 2), Vector2(base.x + m_width + margin * 2, base.y + 20 + margin * 2));
 	}
 }

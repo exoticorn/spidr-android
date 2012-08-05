@@ -12,11 +12,13 @@ namespace exo
 	public:
 		Button(const char* pText);
 
-		void	fadeIn();
+		void	setText(const char* pText) { m_pText = pText; }
+
+		void	fadeIn() { m_fadingOut = false; }
 		void	fadeOut() { m_fadingOut = true; }
 
 		void	update(float timeStep, float posX, float posY);
-		bool	handleInput(const Input& input);
+		bool	handleInput(Input& input);
 		void	render(Renderer& renderer);
 
 		float	getWidth() const { return m_width; }
@@ -28,6 +30,7 @@ namespace exo
 		float		m_posY;
 		float		m_width;
 		float		m_fade;
+		float		m_maxFade;
 		bool		m_fadingOut;
 		bool		m_pressed;
 		float		m_margin;

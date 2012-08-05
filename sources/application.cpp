@@ -26,6 +26,7 @@ namespace exo
 		, m_renderer(gameFramework.getGLContext())
 		, m_startButton("start game")
 		, m_continueButton("continue")
+		, m_pauseButton("#")
 	{
 		m_pAudio = new Audio;
 
@@ -82,6 +83,8 @@ namespace exo
 		{
 			m_startButton.update(timeStep, (xRes - m_startButton.getWidth()) / 2, (yRes - m_startButton.getHeight()) / 2 + 50);
 		}
+		m_pauseButton.update(timeStep, xRes - 60, 60);
+		m_pauseButton.setText(m_pause ? ">" : "#");
 
 		if(m_gameFramework.getNumTouches() > 0)
 		{
@@ -95,6 +98,14 @@ namespace exo
 		{
 			m_input.buttonTriggered = false;
 			m_input.button = false;
+		}
+
+		if(m_isInGame)
+		{
+			if(m_pauseButton.handleInput(m_input))
+			{
+				m_pause = !m_pause;
+			}
 		}
 
 		switch(m_gameState)
@@ -203,6 +214,7 @@ namespace exo
 			m_pContinueSave = nullptr;
 			m_continueSaveSize = 0;
 			m_isInGame = true;
+			m_pause = false;
 			break;
 		case State_GameOver:
 			m_input.playDead = true;
@@ -224,6 +236,15 @@ namespace exo
 			m_player.initialize(&m_level);
 			FxSynth::playSfx(sfx_level_fade_in);
 			break;
+		}
+
+		if(m_isInGame)
+		{
+			m_pauseButton.fadeIn();
+		}
+		else
+		{
+			m_pauseButton.fadeOut();
 		}
 
 		if(score > m_hiScore)
@@ -259,6 +280,7 @@ namespace exo
 
 		m_startButton.render(m_renderer);
 		m_continueButton.render(m_renderer);
+		m_pauseButton.render(m_renderer);
 
 		m_renderer.pop();
 
@@ -363,6 +385,7 @@ namespace exo
 			}
 			m_level.serialize(serializer);
 			m_player.serialize(serializer);
+			m_pause = true;
 		}
 		else
 		{

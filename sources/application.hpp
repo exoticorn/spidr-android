@@ -64,6 +64,7 @@ namespace exo
 
 		Button			m_startButton;
 		Button			m_continueButton;
+		Button			m_pauseButton;
 	};
 
 	ApplicationBase* newApplication(GameFramework& gameFramework);

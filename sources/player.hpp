@@ -13,6 +13,7 @@ namespace exo
 struct Input
 {
 	Input() { stick.clear(); button = buttonTriggered = false; }
+	void consumeInput() { button = false; buttonTriggered = false; }
 	Vector2 stick;
 	Vector2	pos;
 	bool button;

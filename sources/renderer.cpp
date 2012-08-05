@@ -150,7 +150,9 @@ namespace exo
 		{ 'p', obj_p },
 		{ 't', obj_t },
 		{ 'n', obj_n },
-		{ 'u', obj_u }
+		{ 'u', obj_u },
+		{ '#', obj_pause },
+		{ '>', obj_play }
 	};
 
 	void print(Renderer& renderer, const Vector2& position, float fade, const char* pFormat, ...)
