@@ -6,6 +6,7 @@
 #include "player.hpp"
 #include "math.hpp"
 #include "renderer.hpp"
+#include "button.hpp"
 #include "exo/base/mutex.hpp"
 
 class Audio;
@@ -60,6 +61,9 @@ namespace exo
 
 		Renderer		m_renderer;
 		Mutex			m_updateMutex;
+
+		Button			m_startButton;
+		Button			m_continueButton;
 	};
 
 	ApplicationBase* newApplication(GameFramework& gameFramework);

@@ -20,6 +20,8 @@ namespace exo
 
 #define nullptr 0
 #define EXO_USE_PARAMETER(x) ((void)(x))
+
+#define countof(x) (sizeof(x) / sizeof(x[0]))
 }
 
 #endif

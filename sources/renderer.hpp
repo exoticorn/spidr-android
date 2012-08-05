@@ -57,6 +57,8 @@ namespace exo
 
 		Line			m_buffer[BUFFER_SIZE];
 	};
+
+	void print(Renderer& renderer, const Vector2& position, float fade, const char* pFormat, ...);
 }
 
 #endif

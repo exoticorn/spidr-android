@@ -1,6 +1,9 @@
 #include "renderer.hpp"
 #include "exo/base/debug.hpp"
 #include "exo/base/functions.hpp"
+#include "objects.hpp"
+#include <stdarg.h>
+#include <stdio.h>
 
 namespace exo
 {
@@ -117,5 +120,85 @@ namespace exo
 			line.s1 = line.a1;
 			line.s2 = line.b2;
 		}
+	}
+
+	static const struct { char c; const float* pObject; } fontMapping[] = {
+		{ '0', obj_0 },
+		{ '1', obj_1 },
+		{ '2', obj_2 },
+		{ '3', obj_3 },
+		{ '4', obj_4 },
+		{ '5', obj_5 },
+		{ '6', obj_6 },
+		{ '7', obj_7 },
+		{ '8', obj_8 },
+		{ '9', obj_9 },
+		{ 's', obj_5 },
+		{ 'c', obj_c },
+		{ 'o', obj_0 },
+		{ 'r', obj_r },
+		{ 'e', obj_e },
+		{ 'h', obj_h },
+		{ 'i', obj_i },
+		{ '/', obj_slash },
+		{ '$', obj_orb },
+		{ ':', obj_colon },
+		{ 'g', obj_6 },
+		{ 'a', obj_a },
+		{ 'm', obj_m },
+		{ 'v', obj_v },
+		{ 'p', obj_p },
+		{ 't', obj_t },
+		{ 'n', obj_n },
+		{ 'u', obj_u }
+	};
+
+	void print(Renderer& renderer, const Vector2& position, float fade, const char* pFormat, ...)
+	{
+		va_list ap;
+		va_start(ap, pFormat);
+		char buffer[100];
+		vsnprintf(buffer, sizeof(buffer), pFormat, ap);
+		va_end(ap);
+
+		renderer.push();
+		renderer.translate(position.x, position.y);
+		renderer.scale(20, 20);
+		const char* pText = buffer;
+		while(*pText)
+		{
+			if(fade < 1)
+			{
+				for(int i = 0; i < (int)(sizeof(fontMapping) / sizeof(fontMapping[0])); i++)
+				{
+					if(fontMapping[i].c == *pText)
+					{
+						if(fade <= 0)
+						{
+							renderer.drawLines(fontMapping[i].pObject + 1, (uint)*fontMapping[i].pObject);
+						}
+						else
+						{
+							Vector2 buffer[64];
+							uint numLines = exo::min<uint>(countof(buffer) / 2, (uint)*fontMapping[i].pObject / 2);
+							const Vector2* pSource = (const Vector2*)(fontMapping[i].pObject + 1);
+							for(uint i = 0; i < numLines; ++i)
+							{
+								Vector2 a = *pSource++;
+								Vector2 b = *pSource++;
+								buffer[i*2+0] = a;
+								buffer[i*2+1] = a + (b - a) * (1 - fade);
+							}
+							renderer.drawLines(&buffer[0].x, numLines * 2);
+						}
+						break;
+					}
+				}
+			}
+			fade -= 1;
+			renderer.translate(1, 0);
+			pText++;
+		}
+		renderer.pop();
 	}
 }

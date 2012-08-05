@@ -2,9 +2,6 @@
 
 #include "exo/gameframework/gameframework.hpp"
 
-#include <stdio.h>
-#include <stdlib.h>
-#include <stdarg.h>
 #include "audio.hpp"
 #include "objects.hpp"
 #include "math.hpp"
@@ -24,68 +21,11 @@ namespace exo
 		6, 6,		2, 2
 	};
 
-	static const struct { char c; const float* pObject; } fontMapping[] = {
-		{ '0', obj_0 },
-		{ '1', obj_1 },
-		{ '2', obj_2 },
-		{ '3', obj_3 },
-		{ '4', obj_4 },
-		{ '5', obj_5 },
-		{ '6', obj_6 },
-		{ '7', obj_7 },
-		{ '8', obj_8 },
-		{ '9', obj_9 },
-		{ 's', obj_5 },
-		{ 'c', obj_c },
-		{ 'o', obj_0 },
-		{ 'r', obj_r },
-		{ 'e', obj_e },
-		{ 'h', obj_h },
-		{ 'i', obj_i },
-		{ '/', obj_slash },
-		{ '$', obj_orb },
-		{ ':', obj_colon },
-		{ 'g', obj_6 },
-		{ 'a', obj_a },
-		{ 'm', obj_m },
-		{ 'v', obj_v },
-		{ 'p', obj_p },
-		{ 't', obj_t },
-		{ 'n', obj_n },
-		{ 'u', obj_u }
-	};
-
-	void print(Renderer& renderer, const Vector2& position, const char* pFormat, ...)
-	{
-		va_list ap;
-		va_start(ap, pFormat);
-		char buffer[100];
-		vsnprintf(buffer, sizeof(buffer), pFormat, ap);
-		va_end(ap);
-
-		renderer.push();
-		renderer.translate(position.x, position.y);
-		renderer.scale(20, 20);
-		const char* pText = buffer;
-		while(*pText)
-		{
-			for(int i = 0; i < (int)(sizeof(fontMapping) / sizeof(fontMapping[0])); i++)
-			{
-				if(fontMapping[i].c == *pText)
-				{
-					renderer.drawLines(fontMapping[i].pObject + 1, (uint)*fontMapping[i].pObject);
-					break;
-				}
-			}
-			renderer.translate(1, 0);
-			pText++;
-		}
-		renderer.pop();
-	}
-
 	Application::Application(GameFramework& gameFramework)
 		: ApplicationBase(gameFramework)
 		, m_renderer(gameFramework.getGLContext())
+		, m_startButton("start game")
+		, m_continueButton("continue")
 	{
 		m_pAudio = new Audio;
 
@@ -129,6 +69,20 @@ namespace exo
 		m_input.buttonTriggered = false;
 		m_input.playDead = false;
 
+		float uiScale = getUIScale();
+		float xRes = m_screenSize.x / uiScale;
+		float yRes = m_screenSize.y / uiScale;
+
+		if(m_pContinueSave)
+		{
+			m_startButton.update(timeStep, xRes / 2 - 40 - m_startButton.getWidth(), (yRes - m_startButton.getHeight()) / 2 + 50);
+			m_continueButton.update(timeStep, xRes / 2 + 40, (yRes - m_continueButton.getHeight()) / 2 + 50);
+		}
+		else
+		{
+			m_startButton.update(timeStep, (xRes - m_startButton.getWidth()) / 2, (yRes - m_startButton.getHeight()) / 2 + 50);
+		}
+
 		if(m_gameFramework.getNumTouches() > 0)
 		{
 			m_input.buttonTriggered = !m_input.button;
@@ -150,6 +104,14 @@ namespace exo
 			setFadeZoom(1 - m_stateTime);
 			if(m_stateTime >= 1)
 			{
+				if(m_nextState == State_Title)
+				{
+					m_startButton.fadeIn();
+					if(m_pContinueSave)
+					{
+						m_continueButton.fadeIn();
+					}
+				}
 				m_gameState = m_nextState;
 			}
 			break;
@@ -186,6 +148,8 @@ namespace exo
 			m_input.playDead = true;
 			m_player.update(timeStep, m_input);
 			setFadeZoom(m_stateTime);
+			m_startButton.fadeOut();
+			m_continueButton.fadeOut();
 			if(m_stateTime > 1)
 			{
 				m_currentLevel++;
@@ -209,25 +173,19 @@ namespace exo
 		case State_Title:
 			m_input.playDead = true;
 			m_player.update(timeStep, m_input);
-			if(m_input.buttonTriggered)
+			if(m_startButton.handleInput(m_input))
 			{
-				float uiScale = getUIScale();
-				float xRes = m_screenSize.x / uiScale;
-				float yRes = m_screenSize.y / uiScale;
-				Vector2 pos = m_input.pos * (1 / uiScale);
-
-				if(m_pContinueSave && pos.x > xRes * 0.75f && pos.y < yRes * 0.25f)
-				{
-					Serializer serializer(m_pContinueSave, m_continueSaveSize);
-					serialize(serializer);
-				}
-				else
-				{
-					FxSynth::playSfx(sfx_collect, 1, true);
-					m_gameState = State_LevelFadeOut;
-					m_nextState = State_StartGame;
-					m_stateTime = 0;
-				}
+				FxSynth::playSfx(sfx_collect, 1, true);
+				m_gameState = State_LevelFadeOut;
+				m_nextState = State_StartGame;
+				m_stateTime = 0;
+			}
+			else if(m_pContinueSave && m_continueButton.handleInput(m_input))
+			{
+				Serializer serializer(m_pContinueSave, m_continueSaveSize);
+				serialize(serializer);
+				m_startButton.fadeOut();
+				m_continueButton.fadeOut();
 			}
 			break;
 		case State_StartGame:
@@ -290,28 +248,18 @@ namespace exo
 		m_renderer.scale(uiScale, uiScale);
 		float xRes = m_screenSize.x / uiScale;
 		float yRes = m_screenSize.y / uiScale;
-		print(m_renderer, Vector2(10, 10), "hi %d", m_hiScore);
-		print(m_renderer, Vector2(xRes - 20 * 11 - 10, 10), "score %d", score);
+		print(m_renderer, Vector2(10, 10), 0, "hi %d", m_hiScore);
+		print(m_renderer, Vector2(xRes - 20 * 11 - 10, 10), 0, "score %d", score);
 		if(m_gameState != State_Title && m_nextState != State_Title && m_nextState != State_StartGame)
 		{
-			print(m_renderer, Vector2(10, yRes - 32), "$%d", m_level.numOrbsLeft());
+			print(m_renderer, Vector2(10, yRes - 32), 0, "$%d", m_level.numOrbsLeft());
 			int intTimeLeft = ceil(m_timeLeft);
-			print(m_renderer, Vector2(xRes / 2 - 40, yRes - 32), "%d:%02d", intTimeLeft / 60, intTimeLeft % 60);
+			print(m_renderer, Vector2(xRes / 2 - 40, yRes - 32), 0, "%d:%02d", intTimeLeft / 60, intTimeLeft % 60);
 		}
 
-		if(m_gameState == State_Title && m_pContinueSave != nullptr)
-		{
-			print(m_renderer, Vector2(xRes - 20 * 9.5f - 10, 40), "continue");
-		}
+		m_startButton.render(m_renderer);
+		m_continueButton.render(m_renderer);
 
-		if(m_gameState == State_Title && fmodf(m_stateTime, 1) < 0.5f)
-		{
-			print(m_renderer, Vector2(xRes/2 - 110, yRes/2 + 50), "press start");
-		}
-		else if(m_gameState == State_GameOver && fmodf(m_stateTime, 1) < 0.5f)
-		{
-			print(m_renderer, Vector2(xRes/2 - 90, yRes/2 + 50), "game over");
-		}
 		m_renderer.pop();
 
 		m_renderer.translate(m_screenSize.x / 2, m_screenSize.y / 2);
