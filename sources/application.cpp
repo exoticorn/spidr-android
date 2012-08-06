@@ -222,6 +222,9 @@ namespace exo
 			m_player.update(timeStep, m_input);
 			if(m_stateTime > 4)
 			{
+				delete [] m_pContinueSave;
+				m_pContinueSave = nullptr;
+				m_continueSaveSize = 0;
 				m_gameState = State_LevelFadeOut;
 				m_nextState = State_ToTitle;
 				m_stateTime = 0;
