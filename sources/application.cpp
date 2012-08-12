@@ -93,7 +93,7 @@ namespace exo
 			m_input.button = true;
 			const GameFramework::Touch& touch = m_gameFramework.getTouch(0);
 			m_input.stick = Vector2(touch.x, touch.y) - m_screenSize * 0.5f;
-			m_input.pos = Vector2(touch.x, touch.y);
+			m_input.pos = Vector2(touch.x, touch.y) * (1 / uiScale);
 		}
 		else
 		{
