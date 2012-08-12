@@ -7,7 +7,7 @@ import android.content.Context;
 import javax.microedition.khronos.egl.EGLConfig;
 import javax.microedition.khronos.opengles.GL10;
 
-public class GameView extends GLSurfaceView implements View.OnSystemUiVisibilityChangeListener
+public class GameView extends GLSurfaceView
 {
 	long m_gameFramework = 0;
 	boolean m_reHideSystemUi = false;
@@ -23,16 +23,23 @@ public class GameView extends GLSurfaceView implements View.OnSystemUiVisibility
 		setRenderer(new Renderer());
 
 		hideSystemUi();
-		setOnSystemUiVisibilityChangeListener(this);
-	}
-	
-	@Override public void onSystemUiVisibilityChange(int visibility)
-	{
-		if((visibility & SYSTEM_UI_FLAG_LOW_PROFILE) == 0)
+		
+		if(android.os.Build.VERSION.SDK_INT >= android.os.Build.VERSION_CODES.HONEYCOMB)
 		{
-			m_reHideSystemUi = true;
+			setOnSystemUiVisibilityChangeListener(new VisibilityChangeListener());
 		}
 	}
+	
+	class VisibilityChangeListener implements View.OnSystemUiVisibilityChangeListener
+	{
+		@Override public void onSystemUiVisibilityChange(int visibility)
+		{
+			if((visibility & SYSTEM_UI_FLAG_LOW_PROFILE) == 0)
+			{
+				m_reHideSystemUi = true;
+			}
+		}
+	}	
 	
 	private void hideSystemUi()
 	{
