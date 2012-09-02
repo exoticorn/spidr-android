@@ -12,7 +12,7 @@ namespace exo
 		Serializer(const void* pBuffer, uint size);	// read constructor
 		~Serializer();
 
-		bool			isValid() const;
+		bool			isValid(bool checkHash = true) const;
 
 		const uint8*	getData(uint* pSize);	// returns new buffer. Application needs to delete this later.
 		uint8			getDataVersion() const { return m_pBuffer[0]; }

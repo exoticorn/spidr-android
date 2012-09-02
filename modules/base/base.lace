@@ -20,5 +20,7 @@ if @build_tags.include? 'test'
 	! sources/test/*.cpp TEST
 end
 
+add_global_attribute :libs, 'z'
+
 ! sources/*.cpp
 ! base.lace

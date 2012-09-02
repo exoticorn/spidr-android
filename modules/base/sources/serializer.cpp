@@ -1,5 +1,6 @@
 #include "exo/base/serializer.hpp"
 #include "exo/base/debug.hpp"
+#include "exo/base/crc32.hpp"
 #include <string.h>
 
 namespace exo
@@ -30,16 +31,24 @@ namespace exo
 		}
 	}
 
-	bool Serializer::isValid() const
+	bool Serializer::isValid(bool checkHash) const
 	{
 		uint32 size;
 		memcpy(&size, m_pBuffer + 1, 4);
-		if(size != m_bufferSize)
+		if(size != m_bufferSize || size < 9)
 		{
 			return false;
 		}
 
-		// TODO: check hash
+		if(checkHash)
+		{
+			uint32 crc;
+			memcpy(&crc, m_pBuffer + 5, 4);
+			if(crc != getCRC32(m_pBuffer + 9, size - 9))
+			{
+				return false;
+			}
+		}
 
 		return true;
 	}
@@ -50,7 +59,8 @@ namespace exo
 		memcpy(m_pBuffer + 1, &size, 4);
 		m_bufferSize = m_position;
 
-		// TODO: generate hash
+		uint32 crc = getCRC32(m_pBuffer + 9, size - 9);
+		memcpy(m_pBuffer + 5, &crc, 4);
 
 		ASSERTE(isValid());
 

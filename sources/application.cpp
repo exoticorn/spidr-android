@@ -314,8 +314,9 @@ namespace exo
 		m_pAudio->fillBuffer(pBuffer, numSamples);
 	}
 
-	static const uint saveVersion = 3;
+	static const uint saveVersion = 4;
 	static const uint minSaveVersion = 1;
+	static const uint minHashVersion = 4;
 
 	bool Application::onBackPressed()
 	{
@@ -344,7 +345,7 @@ namespace exo
 			file.read(pBuffer, size);
 			Serializer serializer(pBuffer, size);
 			if(serializer.getDataVersion() <= saveVersion && serializer.getDataVersion() >= minSaveVersion &&
-					serializer.isValid())
+					serializer.isValid(serializer.getDataVersion() >= minHashVersion))
 			{
 				serialize(serializer);
 			}
