@@ -282,6 +282,11 @@ namespace exo
 			print(m_renderer, Vector2(xRes / 2 - 40, yRes - 32), 0, "%d:%02d", intTimeLeft / 60, intTimeLeft % 60);
 		}
 
+		if(m_gameState == State_GameOver && fmodf(m_stateTime, 1) < 0.5f)
+		{
+			print(m_renderer, Vector2(xRes/2 - 90, yRes/2 + 50), 0, "game over");
+		}
+
 		m_startButton.render(m_renderer);
 		m_continueButton.render(m_renderer);
 		m_pauseButton.render(m_renderer);
