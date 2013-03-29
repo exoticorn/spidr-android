@@ -1,7 +1,7 @@
 #ifndef EXO_BUTTON_HPP
 #define EXO_BUTTON_HPP
 
-class Input;
+struct Input;
 
 namespace exo
 {

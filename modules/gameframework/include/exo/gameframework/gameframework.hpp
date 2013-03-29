@@ -55,6 +55,8 @@ namespace exo
 #	include "linux/gameframework_linux.hpp"
 #elif defined(EXO_PLATFORM_ANDROID)
 #	include "android/gameframework_android.hpp"
+#elif defined(EXO_PLATFORM_EMSCRIPTEN)
+#	include "emscripten/gameframework_emscripten.hpp"
 #else
 #	error "unsupported platform"
 #endif

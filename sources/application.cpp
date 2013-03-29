@@ -267,7 +267,7 @@ namespace exo
 	void Application::render()
 	{
 		m_renderer.beginRendering(m_screenSize.x, m_screenSize.y);
-
+		
 		m_renderer.push();
 		float uiScale = getUIScale();
 		m_renderer.scale(uiScale, uiScale);

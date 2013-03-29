@@ -1,0 +1,54 @@
+set_global_attribute :emscripten_warning_level, 2
+add_global_attribute :cpp_define, 'EXO_PLATFORM_EMSCRIPTEN'
+
+define_compiler(SingleFileCompiler, :input_pattern => tag('.cpp') | tag('.c'), :dependency_pattern => tag('.hpp') | tag('.h'), :output_name => 'cpp_compiler/%.o') do
+
+	def compile( infile, outfile ) 
+		dfilename = outfile.to_s.sub(/\.o/, '.d')
+		check_optimized_dependencies(infile.path, dfilename) do
+			include_dirs = infile.context.get_attribute_set(:cpp_include_dir).map {|d| ['-I', d] }
+			defines = infile.context.get_attribute_set(:cpp_define).map {|d| ['-D', d] }
+			warnings = []
+			case infile.context.get_attribute_value(:emscripten_warning_level)
+			when 2
+				warnings << '-Wall' << '-Wextra' << '-Werror'
+			when 1
+				warnings << '-Wall' << '-Werror'
+			when 0
+				warnings << '-Werror'
+			end
+			warnings << infile.context.get_attribute_set(:emscripten_warnings).map {|w| ['-W' + w]}
+			
+			trace "Compiling %s", infile
+
+			sh '/home/dranke/tmp/emscripten/emcc',
+#				'-s', 'FULL_ES2=1',
+				'-MD', '-MF', dfilename, '-g',
+				infile.context.get_attribute_set(:emscripten_options),
+				warnings,
+				defines,
+				include_dirs,
+				'-c', infile.path, '-o', make_relative(outfile)
+
+			dependencies = Dependencies.load_make_dependencies(dfilename)
+			dependencies.write_lace_dependencies(dfilename)
+		end
+	end
+end
+
+define_compiler(MultiFileCompiler, :input_pattern => tag('.o'), :output_tag => 'html') do
+	def output_name
+		@output_path + (@project.name + '.html')
+	end
+
+	def compile(infiles)
+		trace 'Linking...'
+		
+		response_sh '/home/dranke/tmp/emscripten/emcc',
+			'-s', 'FULL_ES2=1',
+			'-g', '-O2',
+			infiles.map { |f| f.path },
+			'-o', output_name
+	end
+end
+
