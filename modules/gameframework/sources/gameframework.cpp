@@ -42,7 +42,6 @@ namespace exo
 			m_timeOffset = clamp(-0.1f, 0.1f, target - timeStep);
 			timeStep = min(0.1f, timeStep);
 			m_timer.reset();
-			timeStep = 1.0f/60;
 			m_pApplication->update(timeStep);
 		}
 	}

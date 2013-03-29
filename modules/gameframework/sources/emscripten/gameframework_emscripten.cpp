@@ -48,11 +48,33 @@ namespace exo
 
 	void GameFrameworkEmscripten::run()
 	{
-		int mouseX, mouseY;
-		uint8 mouseButtonState = SDL_GetMouseState(&mouseX, &mouseY);
-		m_touch.x = mouseX;
-		m_touch.y = mouseY;
-		m_isMouseDown = mouseButtonState != 0;
+		SDL_Event event;
+		while(SDL_PollEvent(&event))
+		{
+			switch(event.type)
+			{
+			case SDL_MOUSEMOTION:
+				m_touch.x = event.motion.x;
+				m_touch.y = event.motion.y;
+				break;
+			case SDL_MOUSEBUTTONDOWN:
+				m_isMouseDown = true;
+				break;
+			case SDL_MOUSEBUTTONUP:
+				m_isMouseDown = false;
+				break;
+			case SDL_KEYDOWN:
+				switch(event.key.keysym.sym)
+				{
+				case SDLK_ESCAPE:
+					getApplication()->onBackPressed();
+					break;
+				default:
+					break;
+				}
+				break;
+			}
+		}
 
 		update();
 		render();

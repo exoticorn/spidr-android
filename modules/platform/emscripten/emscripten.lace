@@ -46,7 +46,7 @@ define_compiler(MultiFileCompiler, :input_pattern => tag('.o'), :output_tag => '
 		
 		response_sh '/home/dranke/tmp/emscripten/emcc',
 			'-s', 'FULL_ES2=1',
-			'-g', '-O2',
+			'-O2', '-g', '-s', 'ASM_JS=1',
 			infiles.map { |f| f.path },
 			'-o', output_name
 	end
