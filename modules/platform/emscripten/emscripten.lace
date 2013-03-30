@@ -44,9 +44,16 @@ define_compiler(MultiFileCompiler, :input_pattern => tag('.o'), :output_tag => '
 	def compile(infiles)
 		trace 'Linking...'
 		
+		build_options = ['-g']
+		case @project.build_tags
+		when tag('release')
+			build_options = ['--compression', '/home/dranke/tmp/emscripten/third_party/lzma.js/lzma-native,/home/dranke/tmp/emscripten/third_party/lzma.js/lzma-decoder.js,LZMA.decompress']
+		end
+		
 		response_sh '/home/dranke/tmp/emscripten/emcc',
 			'-s', 'FULL_ES2=1',
-			'-O2', '-g', '-s', 'ASM_JS=1',
+			'-O2', '-s', 'ASM_JS=1',
+			build_options,
 			infiles.map { |f| f.path },
 			'-o', output_name
 	end

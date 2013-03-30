@@ -3,6 +3,8 @@
 
 struct SDL_Surface;
 
+#include "exo/base/timer.hpp"
+
 namespace exo
 {
 	class GameFrameworkEmscripten : public GameFramework
@@ -22,6 +24,9 @@ namespace exo
 
 		bool				m_isMouseDown;
 		Touch				m_touch;
+
+		Timer				m_fpsTimer;
+		uint				m_fpsCount;
 	};
 }
 

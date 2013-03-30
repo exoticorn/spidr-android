@@ -6,8 +6,8 @@
 
 namespace exo
 {
-	static uint screenWidth = 1024;
-	static uint screenHeight = 768;
+	static uint screenWidth = 640;
+	static uint screenHeight = 400;
 
 	GameFrameworkEmscripten::GameFrameworkEmscripten()
 	{
@@ -37,6 +37,9 @@ namespace exo
 		}
 
 		SDL_PauseAudio(0);
+
+		m_fpsTimer.reset();
+		m_fpsCount = 0;
 	}
 
 	GameFrameworkEmscripten::~GameFrameworkEmscripten()
@@ -73,12 +76,24 @@ namespace exo
 					break;
 				}
 				break;
+			case SDL_VIDEORESIZE:
+				getApplication()->setScreenSize((uint)event.resize.w, (uint)event.resize.h);
+				break;
 			}
 		}
 
 		update();
 		render();
 		SDL_GL_SwapBuffers();
+
+		++m_fpsCount;
+		float fpsTime = m_fpsTimer.getElapsedTime();
+		if(fpsTime >= 1)
+		{
+//			printf("fps: %f\n", m_fpsCount / fpsTime);
+			m_fpsCount = 0;
+			m_fpsTimer.reset();
+		}
 	}
 
 	void GameFrameworkEmscripten::audioCallback(void* pUser, unsigned char* pBuffer, int size)

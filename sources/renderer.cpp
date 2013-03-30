@@ -33,6 +33,8 @@ namespace exo
 
 		glEnable(GL_BLEND);
 		glBlendFunc(GL_SRC_ALPHA, GL_ONE);
+
+		glViewport(0, 0, screenWidth, screenHeight);
 	}
 
 	void Renderer::scale(float x, float y)
