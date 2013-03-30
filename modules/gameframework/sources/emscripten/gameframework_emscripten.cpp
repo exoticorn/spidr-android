@@ -22,6 +22,7 @@ namespace exo
 		m_touch.x = 0;
 		m_touch.y = 0;
 
+#if 0
 		SDL_AudioSpec spec;
 		spec.freq = 44100;
 		spec.format = AUDIO_S16SYS;
@@ -37,6 +38,7 @@ namespace exo
 		}
 
 		SDL_PauseAudio(0);
+#endif
 
 		m_fpsTimer.reset();
 		m_fpsCount = 0;
