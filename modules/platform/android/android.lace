@@ -9,7 +9,7 @@ end
 @project.globals.android_sdk_version ||= 16
 @project.globals.android_ndk_version ||= 8
 @project.globals.android_sdk_path = to_path(ENV['ANDROID_SDK'] || (ENV['HOME'] + '/projects/android/android-sdk-linux'))
-@project.globals.android_ndk_path = to_path(ENV['ANDROID_NDK'] || (ENV['HOME'] + '/projects/android/android-ndk-r8'))
+@project.globals.android_ndk_path = to_path(ENV['ANDROID_NDK'] || (ENV['HOME'] + '/projects/android/android-ndk-r8e'))
 @project.globals.android_sdk_platform_path = @project.globals.android_sdk_path + "platforms/android-#{@project.globals.android_sdk_version}"
 add_global_path :java_lib_path, @project.globals.android_sdk_platform_path + 'android.jar'
 add_global_path :java_lib_path, @project.globals.android_sdk_path + 'tools/support/annotations.jar'
@@ -27,7 +27,7 @@ add_global_attribute :eclipse_external_tool, {
 }
 
 @project.globals.android_system_path = @project.globals.android_ndk_path + "platforms/android-#{@project.globals.android_ndk_version}/arch-arm"
-@project.globals.android_compiler_path = @project.globals.android_ndk_path + 'toolchains/arm-linux-androideabi-4.4.3/prebuilt/linux-x86/bin'
+@project.globals.android_compiler_path = @project.globals.android_ndk_path + 'toolchains/arm-linux-androideabi-4.6/prebuilt/linux-x86_64/bin'
 @project.globals.android_compiler_module_path = to_path('.')
 add_global_attribute :cpp_ide_include_dir, @project.globals.android_system_path + 'usr/include'
 
@@ -178,7 +178,7 @@ define_compiler(CompilerBase, :input_pattern => tag('java-classes'), :output_tag
 		if Helpers::newer?(input_files, output_files(files))
 			trace "Dexing class files"
 			FileUtils.mkdir_p @output_path + 'apk'
-			sh @project.globals.android_sdk_path + 'platform-tools/dx',
+			sh @project.globals.android_sdk_path + 'build-tools/17.0.0/dx',
 				'--dex',
 				'--output', @output_path + 'apk/classes.dex',
 				@output_path + 'java',
@@ -204,7 +204,7 @@ define_compiler(CompilerBase, :input_pattern => tag('ANDROID_MANIFEST') | tag('.
 		end
 		trace "Creating apk with manifest %s", manifest.path
 		resource_dirs = @project.global_context.get_attribute_set :android_resource_dir
-		sh @project.globals.android_sdk_path + 'platform-tools/aapt',
+		sh @project.globals.android_sdk_path + 'build-tools/17.0.0/aapt',
 			'package',
 			'--no-crunch',
 			'-f',
@@ -212,10 +212,10 @@ define_compiler(CompilerBase, :input_pattern => tag('ANDROID_MANIFEST') | tag('.
 			'-M', manifest.path,
 			'-F', (output_name.to_s + '.res'),
 			resource_dirs.map {|d| ['-S', d] },
-			'-I', @project.globals.android_sdk_path + 'platforms/android-8/android.jar'
+			'-I', @project.globals.android_sdk_path + 'platforms/android-16/android.jar'
 		sh 'unzip', '-q', '-o', (output_name.to_s + '.res'), '-d', @output_path + 'apk'
 		unless @project.build_tags.include?('master')
-			FileUtils.cp(@project.globals.android_compiler_path.parent.parent + 'gdbserver', @output_path + 'apk/lib/armeabi/gdbserver')
+			FileUtils.cp(@project.globals.android_ndk_path + 'prebuilt/android-arm/gdbserver/gdbserver', @output_path + 'apk/lib/armeabi/gdbserver')
 		end
 		current_dir = Dir.getwd
 		Dir.chdir(@output_path + 'apk')

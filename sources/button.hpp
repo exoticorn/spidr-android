@@ -1,6 +1,8 @@
 #ifndef EXO_BUTTON_HPP
 #define EXO_BUTTON_HPP
 
+#include "exo/base/types.hpp"
+
 class Input;
 
 namespace exo
@@ -13,6 +15,7 @@ namespace exo
 		Button(const char* pText);
 
 		void	setText(const char* pText) { m_pText = pText; }
+		void	setGamepadButtons(uint32 mask) { m_gamepadButtons = mask; }
 
 		void	fadeIn() { m_fadingOut = false; }
 		void	fadeOut() { m_fadingOut = true; }
@@ -34,6 +37,7 @@ namespace exo
 		bool		m_fadingOut;
 		bool		m_pressed;
 		float		m_margin;
+		uint32		m_gamepadButtons;
 	};
 }
 

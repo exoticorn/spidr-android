@@ -10,7 +10,9 @@ namespace exo
 	GameFrameworkLinux::GameFrameworkLinux()
 	{
 		setStoragePath(".");
-		SDL_Init(SDL_INIT_VIDEO);
+		SDL_Init(SDL_INIT_VIDEO | SDL_INIT_JOYSTICK);
+		SDL_JoystickEventState(SDL_ENABLE);
+		SDL_JoystickOpen(0);
 		m_pScreen = SDL_SetVideoMode(screenWidth, screenHeight, 32, SDL_OPENGL);
 		createApplication();
 		getApplication()->setScreenSize(screenWidth, screenHeight);
@@ -69,6 +71,23 @@ namespace exo
 					default:
 						break;
 					}
+					break;
+				case SDL_JOYAXISMOTION:
+					if(event.jaxis.axis == 0)
+					{
+						m_gamepad.stick.x = event.jaxis.value / 32768.0f;
+					}
+					else if(event.jaxis.axis == 1)
+					{
+						m_gamepad.stick.y = event.jaxis.value / 32768.0f;
+					}
+					break;
+				case SDL_JOYBUTTONDOWN:
+					m_gamepad.pressed |= 1 << event.jbutton.button;
+					m_gamepad.triggered |= 1 << event.jbutton.button;
+					break;
+				case SDL_JOYBUTTONUP:
+					m_gamepad.pressed &= ~(1 << event.jbutton.button);
 					break;
 				}
 			}

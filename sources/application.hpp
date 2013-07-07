@@ -41,6 +41,7 @@ namespace exo
 		Level			m_level;
 		Player			m_player;
 		Input			m_input;
+		bool			m_padAim;
 
 		int				m_currentLevel;
 		float			m_scale;

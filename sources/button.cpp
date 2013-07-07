@@ -14,6 +14,8 @@ namespace exo
 		m_fadingOut = true;
 		m_pressed = false;
 		m_margin = 10;
+		m_gamepadButtons = 0;
+		m_posX = m_posY = 0;
 	}
 
 	void Button::update(float timeStep, float posX, float posY)
@@ -28,10 +30,13 @@ namespace exo
 
 	bool Button::handleInput(Input& input)
 	{
-		if(input.button)
+		bool padPressed = (input.buttons & m_gamepadButtons) != 0;
+
+		if(input.touch || padPressed)
 		{
-			if(input.pos.x >= m_posX - 10 && input.pos.x < m_posX + m_width + 10 &&
-				input.pos.y >= m_posY - 10 && input.pos.y < m_posY + 30)
+			if(padPressed || (
+				input.pos.x >= m_posX - 10 && input.pos.x < m_posX + m_width + 10 &&
+				input.pos.y >= m_posY - 10 && input.pos.y < m_posY + 30))
 			{
 				input.consumeInput();
 				m_pressed = true;

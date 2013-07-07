@@ -35,6 +35,22 @@ namespace exo
 	{
 		m_glContext.update();
 
+		{
+			m_fixedGamepad.pressed = m_gamepad.pressed;
+			m_fixedGamepad.triggered = m_gamepad.triggered;
+			m_gamepad.triggered = 0;
+			float length = m_gamepad.stick.getLength();
+			const float deadZone = 0.25f;
+			if(length <= deadZone)
+			{
+				m_fixedGamepad.stick.clear();
+			}
+			else
+			{
+				m_fixedGamepad.stick = m_gamepad.stick * ((length - deadZone) / (1 - deadZone) / length);
+			}
+		}
+
 		if(m_pApplication)
 		{
 			float target = m_timeOffset + m_timer.getElapsedTime();

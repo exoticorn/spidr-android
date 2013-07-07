@@ -30,6 +30,10 @@ namespace exo
 	{
 		m_pAudio = new Audio;
 
+		m_startButton.setGamepadButtons(1);
+		m_continueButton.setGamepadButtons(8);
+		m_pauseButton.setGamepadButtons(16);
+
 		m_currentLevel = 0;
 
 		m_scale = 1.0f;
@@ -39,6 +43,7 @@ namespace exo
 		m_pause = false;
 		m_hiScore = 0;
 		m_isInGame = false;
+		m_padAim = false;
 
 		m_pContinueSave = nullptr;
 		m_continueSaveSize = 0;
@@ -91,6 +96,8 @@ namespace exo
 		{
 			m_input.buttonTriggered = !m_input.button;
 			m_input.button = true;
+			m_input.touchTriggered = !m_input.touch;
+			m_input.touch = true;
 			const GameFramework::Touch& touch = m_gameFramework.getTouch(0);
 			m_input.stick = Vector2(touch.x, touch.y) - m_screenSize * 0.5f;
 			m_input.pos = Vector2(touch.x, touch.y) * (1 / uiScale);
@@ -99,6 +106,24 @@ namespace exo
 		{
 			m_input.buttonTriggered = false;
 			m_input.button = false;
+			m_input.touchTriggered = false;
+			m_input.touch = false;
+		}
+
+		{
+			const GameFramework::Gamepad& pad = m_gameFramework.getGamepad();
+			if(pad.stick.getLength() > 0.1f)
+			{
+				m_input.stick = pad.stick;
+				m_padAim = true;
+			}
+			else
+			{
+				m_padAim = false;
+			}
+			m_input.buttonTriggered |= pad.triggered & 1;
+			m_input.button |= pad.pressed & 1;
+			m_input.buttons = pad.pressed;
 		}
 
 		if(m_isInGame)
@@ -301,7 +326,7 @@ namespace exo
 
 		m_level.render(m_renderer);
 
-		m_player.render(m_renderer, m_gameState == State_Level);
+		m_player.render(m_renderer, m_gameState == State_Level, m_padAim && !m_pause);
 	}
 
 	void Application::setScreenSize(uint width, uint height)

@@ -147,7 +147,7 @@ void Player::resolvePosition(float moveFactor, int depth, float timeStep)
 	}
 }
 
-void Player::render(exo::Renderer& renderer, bool renderAiming)
+void Player::render(exo::Renderer& renderer, bool renderHook, bool renderAiming)
 {
 	renderer.push();
 	Vector2 pos = m_position;
@@ -156,16 +156,25 @@ void Player::render(exo::Renderer& renderer, bool renderAiming)
 	renderer.drawLines(obj_spidr + 1, (exo::uint)*obj_spidr);
 	renderer.pop();
 
-	if(renderAiming)
-	{
-		Vector2 vtx[32];
+	Vector2 vtx[32];
 
-		if(m_hookState != Hook_Aiming)
+	if(m_hookState != Hook_Aiming && renderHook)
+	{
+		vtx[0] = (m_position + (m_hookPosition - m_position).normalize() * playerRadius);
+		vtx[1] = m_hookPosition;
+		renderer.drawLines(&vtx[0].x, 2);
+	}
+
+	if(renderHook && renderAiming)
+	{
+		Vector2 v0 = m_position + m_aimDir * playerRadius;
+		Vector2 v1 = m_position + m_aimDir * 2;
+		Vector2 dir = (v1 - v0) * (1.0f / 32);
+		for(int i = 0; i < 32; ++i)
 		{
-			vtx[0] = (m_position + (m_hookPosition - m_position).normalize() * playerRadius);
-			vtx[1] = m_hookPosition;
-			renderer.drawLines(&vtx[0].x, 2);
+			vtx[i] = v0 + dir * i;
 		}
+		renderer.drawLines(&vtx[0].x, 32);
 	}	
 }
 

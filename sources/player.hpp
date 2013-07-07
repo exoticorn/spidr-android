@@ -12,12 +12,15 @@ namespace exo
 
 struct Input
 {
-	Input() { stick.clear(); button = buttonTriggered = false; }
-	void consumeInput() { button = false; buttonTriggered = false; }
+	Input() { stick.clear(); button = buttonTriggered = touch = touchTriggered = playDead = false; buttons = 0; }
+	void consumeInput() { button = buttonTriggered = touch = touchTriggered = false; }
 	Vector2 stick;
 	Vector2	pos;
 	bool button;
 	bool buttonTriggered;
+	bool touch;
+	bool touchTriggered;
+	exo::uint32 buttons;
 	bool playDead;
 };
 
@@ -29,7 +32,7 @@ public:
 
 	const Vector2& getPosition() const { return m_position; }
 	void update(float timeStep, const Input& input);
-	void render(exo::Renderer& renderer, bool renderAiming);
+	void render(exo::Renderer& renderer, bool renderHook, bool renderAiming);
 	void serialize(exo::Serializer& serializer);
 
 private:
