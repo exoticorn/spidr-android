@@ -1,9 +1,12 @@
 package de.exoticorn.gameframework;
 
 import android.opengl.GLSurfaceView;
+import android.view.InputDevice;
+import android.view.KeyEvent;
 import android.view.MotionEvent;
 import android.view.View;
 import android.content.Context;
+
 import javax.microedition.khronos.egl.EGLConfig;
 import javax.microedition.khronos.opengles.GL10;
 
@@ -15,6 +18,9 @@ public class GameView extends GLSurfaceView
 	public GameView(Context context, long gameFramework)
 	{
 		super(context);
+		
+		setFocusable(true);
+		requestFocus();
 		
 		m_gameFramework = gameFramework;
 		
@@ -79,6 +85,49 @@ public class GameView extends GLSurfaceView
 				Native.handleTouchEvent(m_gameFramework, id, down, x, y);
 			}
 		});
+	}
+	
+	@Override public boolean onKeyDown(int keyCode, KeyEvent event)
+	{
+		if(keyCode >= KeyEvent.KEYCODE_BUTTON_A && keyCode < KeyEvent.KEYCODE_BUTTON_A + 16)
+		{
+			sendGamepadButtonEvent(keyCode - KeyEvent.KEYCODE_BUTTON_A, true);
+			return true;
+		}
+		return false;
+	}
+	
+	@Override public boolean onKeyUp(int keyCode, KeyEvent event)
+	{
+		if(keyCode >= KeyEvent.KEYCODE_BUTTON_A && keyCode < KeyEvent.KEYCODE_BUTTON_A + 16)
+		{
+			sendGamepadButtonEvent(keyCode - KeyEvent.KEYCODE_BUTTON_A, false);
+			return true;
+		}
+		return false;
+	}
+	
+	private void sendGamepadButtonEvent(final int button, final boolean down)
+	{
+		queueEvent(new Runnable() {
+			public void run() {
+				Native.handleGamepadButtonEvent(m_gameFramework, button, down);
+			}
+		});
+	}
+	
+	@Override public boolean onGenericMotionEvent(final MotionEvent event)
+	{
+		if((event.getDevice().getSources() & InputDevice.SOURCE_CLASS_JOYSTICK) != 0)
+		{
+			queueEvent(new Runnable() {
+				public void run() {
+					Native.handleGamepadStickEvent(m_gameFramework, event.getAxisValue(MotionEvent.AXIS_X), event.getAxisValue(MotionEvent.AXIS_Y));
+				}
+			});
+			return true;
+		}
+		return false;
 	}
 	
 	class Renderer implements GLSurfaceView.Renderer

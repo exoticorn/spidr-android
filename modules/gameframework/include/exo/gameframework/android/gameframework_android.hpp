@@ -18,6 +18,8 @@ namespace exo
 		void				update();
 		void				setScreenSize(uint width, uint height);
 		void				handleTouchInput(int id, bool down, float x, float y);
+		void				handleGamepadStickEvent(float x, float y);
+		void				handleGamepadButtonEvent(int button, bool down);
 
 	private:
 		Touch				m_touch;

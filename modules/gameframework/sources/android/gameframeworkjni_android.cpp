@@ -51,6 +51,20 @@ namespace exo
 		reinterpret_cast<GameFrameworkAndroid*>(gameFramework)->handleTouchInput(id, down, x, y);
 	}
 
+	void Java_de_exoticorn_gameframework_Native_handleGamepadStickEvent(JNIEnv* pEnv, jobject self, jlong gameFramework, jfloat x, jfloat y)
+	{
+		EXO_USE_PARAMETER(pEnv);
+		EXO_USE_PARAMETER(self);
+		reinterpret_cast<GameFrameworkAndroid*>(gameFramework)->handleGamepadStickEvent(x, y);
+	}
+
+	void Java_de_exoticorn_gameframework_Native_handleGamepadButtonEvent(JNIEnv* pEnv, jobject self, jlong gameFramework, jint button, jboolean down)
+	{
+		EXO_USE_PARAMETER(pEnv);
+		EXO_USE_PARAMETER(self);
+		reinterpret_cast<GameFrameworkAndroid*>(gameFramework)->handleGamepadButtonEvent(button, down);
+	}
+
 	void Java_de_exoticorn_gameframework_Native_fillAudioBuffer(JNIEnv* pEnv, jobject self, jlong gameFramework, jshortArray buffer)
 	{
 		EXO_USE_PARAMETER(self);

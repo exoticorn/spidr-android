@@ -51,4 +51,23 @@ namespace exo
 		m_touch.x = x;
 		m_touch.y = y;
 	}
+
+	void GameFrameworkAndroid::handleGamepadStickEvent(float x, float y)
+	{
+		m_gamepad.stick.set(x, y);
+	}
+
+	void GameFrameworkAndroid::handleGamepadButtonEvent(int button, bool down)
+	{
+		uint32 mask = 1u << button;
+		if(down)
+		{
+			m_gamepad.pressed |= mask;
+			m_gamepad.triggered |= mask;
+		}
+		else
+		{
+			m_gamepad.pressed &= ~mask;
+		}
+	}
 }
